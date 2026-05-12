@@ -1,0 +1,36 @@
+x-backend-env: &backend-env
+  DB_USER: ${DB_USER}
+  DB_PASSWORD: ${DB_PASSWORD}
+  DB_NAME: ${DB_NAME}
+  DB_PORT: 5432
+  DB_HOST: db
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      <<: *backend-env
+
+  db:
+    image: postgres:18.3
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - ./docker/postgres:/docker-entrypoint-initdb.d/
+    ports:
+      - "127.0.0.1:${DB_PORT_EXTERNAL:-5432}:5432"
+
+  s3:
+    image: minio/minio:latest
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER?-Variable is empty or not set}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --address :9000 --console-address :9001
+  
