@@ -1,4 +1,4 @@
-package vn.edu.ptithcm.mindcard.common.exception;
+package vn.edu.ptithcm.mindcard.exception;
 
 import lombok.Getter;
 

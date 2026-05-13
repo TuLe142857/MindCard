@@ -2,7 +2,7 @@ package vn.edu.ptithcm.mindcard.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import vn.edu.ptithcm.mindcard.common.response.APIResponse;
+import vn.edu.ptithcm.mindcard.dto.response.APIResponse;
 
 @RestController
 @RequestMapping("/api/health")

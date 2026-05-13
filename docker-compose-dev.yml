@@ -9,11 +9,11 @@ services:
     ports:
       - "${FRONTEND_PORT_EXTERNAL:-5173}:5173"
 
-  backend:
-    build:
-      context: ./backend
-    ports:
-      - "${BACKEND_PORT_EXTERNAL:-8080}:8080"
+  # backend:
+  #   build:
+  #     context: ./backend
+  #   ports:
+  #     - "${BACKEND_PORT_EXTERNAL:-8080}:8080"
     
   db:
     volumes:

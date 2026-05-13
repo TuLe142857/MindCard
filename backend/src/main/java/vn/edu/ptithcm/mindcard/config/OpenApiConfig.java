@@ -1,4 +1,4 @@
-package vn.edu.ptithcm.mindcard.common.config;
+package vn.edu.ptithcm.mindcard.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import org.springframework.context.annotation.Bean;

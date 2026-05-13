@@ -1,7 +1,7 @@
-package vn.edu.ptithcm.mindcard.common.response;
+package vn.edu.ptithcm.mindcard.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import vn.edu.ptithcm.mindcard.common.exception.ErrorCode;
+import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.Builder;
@@ -14,17 +14,24 @@ import lombok.Builder;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class APIResponse<T> {
-    private final boolean success;
-    private final T data;
-    private final String message;
-    private final String errorCode;
-    private final long timestamp;
 
+    @Builder.Default
+    private final boolean success = true;
+
+    private final T data;
+
+    private final PaginationMeta meta;
+
+    private final String message;
+
+    private final String errorCode;
+
+    @Builder.Default
+    private final long timestamp = Instant.now().getEpochSecond();
 
     public static <T> APIResponse<T> ok(T data){
         return APIResponse.<T>builder()
                 .data(data)
-                .timestamp(Instant.now().getEpochSecond())
                 .build();
     }
 
@@ -32,14 +39,29 @@ public class APIResponse<T> {
         return APIResponse.<T>builder()
                 .data(data)
                 .message(message)
-                .timestamp(Instant.now().getEpochSecond())
+                .build();
+    }
+
+    public static <T> APIResponse<T> ok(T data, PaginationMeta meta){
+        return APIResponse.<T>builder()
+                .success(true)
+                .data(data)
+                .meta(meta)
+                .build();
+    }
+
+    public static <T> APIResponse<T> ok(T data, PaginationMeta meta, String message){
+        return APIResponse.<T>builder()
+                .success(true)
+                .data(data)
+                .meta(meta)
+                .message(message)
                 .build();
     }
 
     public static <T> APIResponse<T> error(ErrorCode error){
         return APIResponse.<T>builder()
                 .errorCode(error.getCode())
-                .timestamp(Instant.now().getEpochSecond())
                 .build();
     }
 
@@ -47,7 +69,6 @@ public class APIResponse<T> {
         return APIResponse.<T>builder()
                 .errorCode(error.getCode())
                 .message(message)
-                .timestamp(Instant.now().getEpochSecond())
                 .build();
     }
 }

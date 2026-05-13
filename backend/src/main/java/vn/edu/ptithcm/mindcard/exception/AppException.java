@@ -1,4 +1,4 @@
-package vn.edu.ptithcm.mindcard.common.exception;
+package vn.edu.ptithcm.mindcard.exception;
 
 public class AppException extends RuntimeException{
     private final  ErrorCode errorCode;
