@@ -19,6 +19,14 @@ services:
     volumes:
       - db_data_dev:/var/lib/postgresql/18/docker
 
+  redis-insight:
+      image: redis/redisinsight:latest
+      restart: unless-stopped
+      ports:
+        - "5540:5540"
+      volumes:
+        - redis-insight-data:/data
+
   s3:
     volumes:
       - s3_data_dev:/data
@@ -26,3 +34,4 @@ services:
 volumes:
   db_data_dev:
   s3_data_dev:
+  redis-insight-data:

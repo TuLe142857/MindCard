@@ -34,7 +34,13 @@ services:
     image: redis:8.6
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${REDIS_PORT_EXTERNAL:-6739}:6739"
+      - "127.0.0.1:${REDIS_PORT_EXTERNAL:-6379}:6379"
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1025:1025" # SMTP server
+      - "127.0.0.1:8025:8025" # Web UI
 
   s3:
     image: minio/minio:latest
