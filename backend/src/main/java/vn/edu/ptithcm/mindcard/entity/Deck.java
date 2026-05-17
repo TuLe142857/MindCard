@@ -4,8 +4,15 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Builder;
 
+import java.util.List;
+
 @Entity
-@Table(name = "decks")
+@Table(name = "decks", uniqueConstraints = {
+        @UniqueConstraint(
+                name = "unique_user_deck_name",
+                columnNames = {"user_id", "name"}
+        )
+})
 @Data
 @Builder
 public class Deck {
@@ -16,19 +23,27 @@ public class Deck {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Integer id;
 
+    @Column(nullable = false)
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private DeckVisibility visibility;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
     @ManyToOne
-    @JoinColumn(name = "topic_id")
+    @JoinColumn(name = "topic_id", nullable = false)
     private Topic topic;
+
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String description;
+
+    @OneToMany(mappedBy = "deck", fetch = FetchType.LAZY)
+    private List<Card> cards;
+
 }

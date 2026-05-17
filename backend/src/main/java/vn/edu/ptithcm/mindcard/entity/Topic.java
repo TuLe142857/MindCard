@@ -14,9 +14,9 @@ public class Topic {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Integer id;
 
-    @Column
+    @Column(length = 64)
     private String name;
 
     @OneToMany(mappedBy = "topic", fetch = FetchType.LAZY)
