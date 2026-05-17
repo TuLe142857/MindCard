@@ -21,8 +21,10 @@ public enum ErrorCode {
     INVALID_OTP(400),
     ;
 
-
+    /** ErrorCode as String */
     private final String code;
+
+    /** Http status code for API response */
     private final int httpStatusCode;
 
     ErrorCode(String code, int httpStatusCode) {
