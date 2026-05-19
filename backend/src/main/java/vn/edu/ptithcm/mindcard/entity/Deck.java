@@ -1,8 +1,10 @@
 package vn.edu.ptithcm.mindcard.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -10,11 +12,13 @@ import java.util.List;
 @Table(name = "decks", uniqueConstraints = {
         @UniqueConstraint(
                 name = "unique_user_deck_name",
-                columnNames = {"user_id", "name"}
+                columnNames = {"owner_id", "name"}
         )
 })
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Deck {
     public enum DeckVisibility{
         PUBLIC,

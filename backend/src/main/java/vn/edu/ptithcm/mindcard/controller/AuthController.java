@@ -9,9 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
@@ -21,7 +18,6 @@ import vn.edu.ptithcm.mindcard.dto.request.auth.*;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.dto.response.auth.LoginResponse;
 import vn.edu.ptithcm.mindcard.dto.response.auth.RefreshResponse;
-import vn.edu.ptithcm.mindcard.exception.AppException;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.JwtService;
 import vn.edu.ptithcm.mindcard.service.AuthService;
@@ -44,12 +40,13 @@ public class AuthController {
     @Operation(summary = "Check whoami")
     @ApiError(value = ErrorCode.UNAUTHENTICATED, description = "user not login")
     public ResponseEntity<APIResponse.Success<?>> whoami(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)){
-            return ResponseEntity.ok(APIResponse.success(authentication.getPrincipal()));
-        }else{
-            throw new AppException(ErrorCode.UNAUTHENTICATED, "user not login");
-        }
+        return ResponseEntity.ok(APIResponse.success(authService.getCurrentUserPrincipal()));
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)){
+//            return ResponseEntity.ok(APIResponse.success(authentication.getPrincipal()));
+//        }else{
+//            throw new AppException(ErrorCode.UNAUTHENTICATED, "user not login");
+//        }
 
     }
 

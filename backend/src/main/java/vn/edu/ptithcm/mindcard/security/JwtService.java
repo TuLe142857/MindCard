@@ -44,7 +44,7 @@ public class JwtService {
                 ? jwtProperties.accessTokenExpirationSecond()
                 : jwtProperties.refreshTokenExpirationSecond();
 
-        Date expiration = new Date((new Date()).getTime() + expired_seconds* 1000L);
+        Date expiration = new Date((new Date()).getTime() + expired_seconds * 1000L);
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
                 .subject(subject)
@@ -60,7 +60,7 @@ public class JwtService {
                 ? jwtProperties.accessTokenExpirationSecond()
                 : jwtProperties.refreshTokenExpirationSecond();
 
-        Date expiration = new Date((new Date()).getTime()/1000 + expired_seconds);
+        Date expiration = new Date((new Date()).getTime() + expired_seconds * 1000L);
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
                 .subject(subject)

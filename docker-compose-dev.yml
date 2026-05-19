@@ -30,7 +30,9 @@ services:
   s3:
     volumes:
       - s3_data_dev:/data
-
+    ports:
+      - "127.0.0.1:9001:9001"
+      - "127.0.0.1:9000:9000"
 volumes:
   db_data_dev:
   s3_data_dev:

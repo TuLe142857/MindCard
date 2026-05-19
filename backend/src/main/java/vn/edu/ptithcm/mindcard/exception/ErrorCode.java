@@ -12,6 +12,8 @@ public enum ErrorCode {
     UNAUTHENTICATED(403),
     USER_NOT_FOUND(404),
 
+    FORBIDDEN(400),
+
     JWT_TOKEN_EXPIRED(400),
     INVALID_JWT_TOKEN(400),
     JWT_TOKEN_REVOKED(400),
@@ -19,6 +21,8 @@ public enum ErrorCode {
     RESOURCE_ALREADY_EXIST(409),
     RESOURCE_NOT_FOUND(404),
     INVALID_OTP(400),
+
+    FILE_UPLOAD_FAILED(400)
     ;
 
     /** ErrorCode as String */

@@ -18,7 +18,9 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.exception.AppException;
+import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.JwtService;
+import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 
 import java.io.IOException;
 import java.util.List;
@@ -57,10 +59,16 @@ public class JWTRequestFilter extends OncePerRequestFilter {
             Claims claims = jwtService.validateJwtToken(token, JwtService.TokenType.ACCESS_TOKEN);
 
             String username = claims.getSubject();
+            Integer userId = claims.get("id", Integer.class);
 
+            if (userId == null){
+                throw new AppException(ErrorCode.SERVER_ERROR, "Can not extract user id from jwt");
+            }
+
+            UserPrincipal principal = new UserPrincipal(userId, username);
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            username,
+                            principal,
                             null,
                             List.of()
                     );

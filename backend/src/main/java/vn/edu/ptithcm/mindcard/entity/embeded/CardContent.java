@@ -21,6 +21,6 @@ public class CardContent {
     @Column(name = "image_key", nullable = true)
     private String imageKey;
 
-    @Column(name = "image_key", nullable = true)
+    @Column(name = "audio_key", nullable = true)
     private String audioKey;
 }

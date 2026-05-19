@@ -5,6 +5,7 @@ import java.util.Map;
 
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -24,6 +25,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<APIResponse<Void>> handleNotFound(NoResourceFoundException exc) {
         APIResponse<Void> response = APIResponse.error(ErrorCode.NOT_FOUND, exc.getMessage());
         return ResponseEntity.status(404).body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<APIResponse<?>> handleRequestError(HttpMessageNotReadableException exc){
+        APIResponse<?> response = APIResponse.error(ErrorCode.VALIDATION_ERROR, "Invalid request data");
+        return ResponseEntity.status(ErrorCode.VALIDATION_ERROR.getHttpStatusCode()).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

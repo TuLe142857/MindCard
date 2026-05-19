@@ -1,8 +1,10 @@
 package vn.edu.ptithcm.mindcard.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -10,6 +12,8 @@ import java.util.List;
 @Table(name = "topics")
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Topic {
 
     @Id

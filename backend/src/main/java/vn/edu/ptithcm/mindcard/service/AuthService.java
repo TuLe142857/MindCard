@@ -3,6 +3,9 @@ package vn.edu.ptithcm.mindcard.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +21,11 @@ import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.repository.UserRepository;
 import vn.edu.ptithcm.mindcard.security.JwtBlacklistService;
 import vn.edu.ptithcm.mindcard.security.JwtService;
+import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 import vn.edu.ptithcm.mindcard.utils.OTPUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -42,6 +48,29 @@ public class AuthService {
 
     @Autowired
     private JwtBlacklistService blacklistService;
+
+    private String generateAccessToken(User user){
+        Map<String, Object> additionalClaims = new HashMap<>();
+        additionalClaims.put("id", user.getId());
+        additionalClaims.put("email", user.getEmail());
+        return jwtService.generateJwtToken(user.getUsername(), additionalClaims, JwtService.TokenType.ACCESS_TOKEN);
+    }
+
+    private String generateRefreshToken(User user){
+        Map<String, Object> additionalClaims = new HashMap<>();
+        additionalClaims.put("id", user.getId());
+        additionalClaims.put("email", user.getEmail());
+        return jwtService.generateJwtToken(user.getUsername(), additionalClaims, JwtService.TokenType.REFRESH_TOKEN);
+    }
+
+    public UserPrincipal getCurrentUserPrincipal(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken){
+            return null;
+        }
+
+        return (UserPrincipal) authentication.getPrincipal();
+    }
 
     /**
      * Requests user registration by sending a validation OTP to the user's email.
@@ -123,8 +152,8 @@ public class AuthService {
             throw new AppException(ErrorCode.LOGIN_FAILED, "Identity or password mismatch");
         }
 
-        String accessToken = jwtService.generateJwtToken(user.get().getUsername(), JwtService.TokenType.ACCESS_TOKEN);
-        String refreshToken = jwtService.generateJwtToken(user.get().getUsername(), JwtService.TokenType.REFRESH_TOKEN);
+        String accessToken = generateAccessToken(user.get());
+        String refreshToken = generateRefreshToken(user.get());
 
         return new LoginResponse(accessToken, refreshToken);
     }
@@ -157,7 +186,12 @@ public class AuthService {
     public RefreshResponse refreshAccessToken(String refreshToken) throws AppException{
         var claims = jwtService.validateJwtToken(refreshToken, JwtService.TokenType.REFRESH_TOKEN);
         String userName = claims.getSubject();
-        String accessToken = jwtService.generateJwtToken(userName, JwtService.TokenType.ACCESS_TOKEN);
+        Optional<User> user = userRepository.findByUsername(userName);
+        if (user.isEmpty()){
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        String accessToken = generateAccessToken(user.get());
         return new RefreshResponse(accessToken);
     }
 
