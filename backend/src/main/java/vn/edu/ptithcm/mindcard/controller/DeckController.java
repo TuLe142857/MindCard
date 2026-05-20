@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardCreateBatchRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckCreateRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckRatingRequest;
+import vn.edu.ptithcm.mindcard.dto.request.deck.DeckUpdateRequest;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
 import vn.edu.ptithcm.mindcard.service.AuthService;
@@ -56,17 +57,43 @@ public class DeckController {
         return ResponseEntity.ok(APIResponse.success(response));
     }
 
-    @PostMapping("/{deckId}/save")
-    @Operation(summary = "Save deck")
-    public ResponseEntity<APIResponse.Success<?>> saveDeck(){
+    @PostMapping("/{deckId}")
+    @Operation(summary = "Update Deck")
+    public ResponseEntity<APIResponse.Success<?>> updateDeck(
+            @RequestBody DeckUpdateRequest body,
+            @PathVariable int deckId
+            )
+    {
+        deckService.updateDeck(
+                authService.getCurrentUserPrincipal().getId(),
+                deckId,
+                body
+        );
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PostMapping("/{deckId}/ratings")
+
+    @PostMapping("/{deckId}/save")
+    @Operation(summary = "Save deck")
+    public ResponseEntity<APIResponse.Success<?>> saveDeck(
+            @PathVariable int deckId
+    ){
+        int userId = authService.getCurrentUserPrincipal().getId();
+        deckService.saveDeck(userId, deckId);
+        return ResponseEntity.ok(APIResponse.success());
+    }
+
+    @PostMapping("/{deckId}/rating")
     @Operation(summary = "Rating Deck (1-5 stars)")
     public ResponseEntity<APIResponse.Success<?>> ratingDeck(
-            @RequestBody @Valid DeckRatingRequest body
-            ){
+            @RequestBody @Valid DeckRatingRequest body,
+            @PathVariable int deckId
+    ){
+        deckService.ratingDeck(
+                authService.getCurrentUserPrincipal().getId(),
+                deckId,
+                body.rating()
+        );
         return ResponseEntity.ok(APIResponse.success());
     }
 
@@ -86,11 +113,4 @@ public class DeckController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @GetMapping("/{deckId}/card/queue")
-    @Operation(summary = "Get study queue")
-    public ResponseEntity<APIResponse.Success<?>> getStudyQueue(
-            @RequestParam(defaultValue = "10") Integer limit
-    ){
-        return ResponseEntity.ok(APIResponse.success());
-    }
 }

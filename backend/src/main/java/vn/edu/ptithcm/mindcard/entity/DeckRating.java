@@ -18,6 +18,10 @@ import java.time.Instant;
 public class DeckRating{
 
     @Embeddable
+    @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class DeckRatingId{
         @Column(name = "deck_id")
         private Integer deckId;
@@ -28,6 +32,16 @@ public class DeckRating{
 
     @EmbeddedId
     private DeckRatingId id;
+
+    @ManyToOne
+    @MapsId("deckId")
+    @JoinColumn(name = "deck_id")
+    private Deck deck;
+
+    @ManyToOne
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(nullable = false)
     private Integer rating;

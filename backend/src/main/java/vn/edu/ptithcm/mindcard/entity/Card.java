@@ -5,9 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import vn.edu.ptithcm.mindcard.entity.embeded.CardContent;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "cards")
@@ -29,32 +32,18 @@ public class Card {
     @JoinColumn(name = "deck_id", nullable = false)
     private Deck deck;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CardType type;
+    @OneToOne
+    @JoinColumn(name = "latest_version_id")
+    private CardVersion latestVersion;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "text", column = @Column(name = "front_text")),
-            @AttributeOverride(name = "imageKey", column = @Column(name = "front_image_key")),
-            @AttributeOverride(name = "audioKey", column = @Column(name = "front_audio_key"))
-    })
-    private CardContent frontContent;
+    @OneToMany(mappedBy = "card")
+    List<CardVersion> versions;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "text", column = @Column(name = "back_text")),
-            @AttributeOverride(name = "imageKey", column = @Column(name = "back_image_key")),
-            @AttributeOverride(name = "audioKey", column = @Column(name = "back_audio_key"))
-    })
-    private CardContent backContent;
-
-    @Column(name = "rating_count", nullable = false)
-    private Integer ratingCount = 0;
-
-    @Column(name = "avg_rating", nullable = false)
-    private Double AvgRating = 0D;
-
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 }

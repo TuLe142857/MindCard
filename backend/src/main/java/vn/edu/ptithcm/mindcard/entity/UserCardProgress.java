@@ -4,6 +4,9 @@ package vn.edu.ptithcm.mindcard.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+import java.time.Instant;
+
 @Entity
 @Table
 @Builder
@@ -18,11 +21,12 @@ public class UserCardProgress {
     }
 
     @Embeddable
-    @Getter
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class UserCardProgressId{
+    @EqualsAndHashCode
+    public static class UserCardProgressId implements Serializable {
         @Column(name = "user_id")
         private Integer userId;
 
@@ -42,5 +46,19 @@ public class UserCardProgress {
     @MapsId("cardId")
     @JoinColumn(name = "card_id")
     private Card card;
+
+    @ManyToOne
+    @JoinColumn(name = "card_version_id")
+    private CardVersion cardVersion;
+
+    @Enumerated(EnumType.STRING)
+    private CardStatus status = CardStatus.NEW;
+
+    @Builder.Default
+    @Column(name = "ease_factor", nullable = false)
+    private Float easeFactor = 2.5F;
+
+    @Column(name = "next_review_date")
+    private Instant nextReviewDate = Instant.now();
 
 }

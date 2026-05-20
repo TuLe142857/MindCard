@@ -2,6 +2,7 @@ package vn.edu.ptithcm.mindcard.dto.request.deck;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 public record DeckRatingRequest(
         @Min(value = 1)

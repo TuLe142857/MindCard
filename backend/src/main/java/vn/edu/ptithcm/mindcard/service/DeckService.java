@@ -5,16 +5,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckCreateRequest;
+import vn.edu.ptithcm.mindcard.dto.request.deck.DeckUpdateRequest;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
-import vn.edu.ptithcm.mindcard.entity.Deck;
-import vn.edu.ptithcm.mindcard.entity.User;
+import vn.edu.ptithcm.mindcard.entity.*;
 import vn.edu.ptithcm.mindcard.exception.AppException;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
-import vn.edu.ptithcm.mindcard.repository.DeckRepository;
-import vn.edu.ptithcm.mindcard.repository.TopicRepository;
-import vn.edu.ptithcm.mindcard.repository.UserRepository;
+import vn.edu.ptithcm.mindcard.repository.*;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class DeckService {
@@ -25,11 +24,20 @@ public class DeckService {
     private DeckRepository deckRepository;
 
     @Autowired
+    private SavedDeckRepository savedDeckRepository;
+
+    @Autowired
+    private DeckRatingRepository deckRatingRepository;
+
+    @Autowired
     private TopicRepository topicRepository;
+
+    @Autowired
+    private UserCardProgressRepository userCardProgressRepository;
 
 
     @Transactional
-    public void createDeck(int userId, DeckCreateRequest request){
+    public void createDeck(int userId, DeckCreateRequest request) throws AppException{
         if (deckRepository.findByOwnerIdAndName(userId, request.name()).isPresent())
             throw new AppException(ErrorCode.RESOURCE_ALREADY_EXIST, "Deck name already existed");
         Deck newDeck = Deck.builder()
@@ -73,11 +81,158 @@ public class DeckService {
 
     }
 
+    /**
+     * Save deck and create CardProgress(with status=NEW), update deck.savedCount
+     * @param userId user id
+     * @param deckId deck id
+     */
     @Transactional
-    public void updateDeck(){
+    public void saveDeck(int userId, int deckId) throws AppException{
+        User user;
+        Deck deck;
+        try{
+            user = userRepository.getReferenceById(userId);
+            deck = deckRepository.getReferenceById(deckId);
+        }catch (EntityNotFoundException e){
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, e.getMessage());
+        }
 
+        // Check if user has already saved this deck
+        if (savedDeckRepository.findByUserIdAndDeckId(userId, deckId).isPresent()){
+            throw new AppException(ErrorCode.ACTION_ALREADY_PERFORMED, "You have already saved this deck!");
+        }
+
+        // save deck
+        savedDeckRepository.save(
+                SavedDeck.builder()
+                        .user(user)
+                        .deck(deck)
+                        .build()
+        );
+
+        // create card progress
+        deck.getCards().forEach(card -> {
+            var id = UserCardProgress.UserCardProgressId.builder()
+                    .userId(user.getId())
+                    .cardId(card.getId())
+                    .build();
+            userCardProgressRepository.save(
+                    UserCardProgress.builder()
+                            .id(id)
+                            .user(user)
+                            .card(card)
+                            .status(UserCardProgress.CardStatus.NEW)
+                            .cardVersion(card.getLatestVersion())
+                            .build()
+            );
+        });
+
+        // update save count
+        deck.setSavedCount(deck.getSavedCount() + 1);
+        deckRepository.save(deck);
     }
 
-    
+    /**
+     * Add rating to deck and update deck.ratingCount, deck.avgRating
+     * @param userId user id
+     * @param deckId deck id
+     * @param rating rating in range [1, 5]
+     * @throws AppException with the following {@link ErrorCode}
+     * <ul>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND}</li> - user or deck not found
+     *     <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED}</li> - user has already rating this deck
+     * </ul>
+     * @throws IllegalArgumentException when {@code rating} is not in range [1, 5]
+     */
+    public void ratingDeck(int userId, int deckId, int rating) throws AppException, IllegalArgumentException{
+        User user;
+        Deck deck;
+        try{
+            user = userRepository.getReferenceById(userId);
+            deck = deckRepository.getReferenceById(deckId);
+        }catch (EntityNotFoundException e){
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, e.getMessage());
+        }
+
+        if (deckRatingRepository.findByDeckIdAndUserId(deckId, userId).isPresent()){
+            throw new AppException(ErrorCode.ACTION_ALREADY_PERFORMED,"You have already rating this deck!");
+        }
+
+        if(!(rating >= 1 && rating <= 5)){
+            throw new IllegalArgumentException("rating must in [1, 5]");
+        }
+
+        var ratingId = DeckRating.DeckRatingId.builder()
+                .userId(userId)
+                .deckId(deckId)
+                .build();
+
+        // set rating
+        deckRatingRepository.save(
+                DeckRating.builder()
+                        .id(ratingId)
+                        .user(user)
+                        .deck(deck)
+                        .rating(rating)
+                        .build()
+        );
+
+        // update avg rating
+
+        int ratingCount = deck.getRatingCount();
+        double avgRating = deck.getAvgRating();
+        deck.setRatingCount(ratingCount + 1);
+        deck.setAvgRating( (avgRating*ratingCount + rating) / (ratingCount + 1));
+
+        deckRepository.save(deck);
+    }
+
+
+    /**
+     * Update Deck
+     * @param updateRequest update request
+     * @throws AppException ...
+     */
+    @Transactional
+    public void updateDeck(int userId, int deckId, DeckUpdateRequest updateRequest) throws AppException{
+        User user;
+        Deck deck;
+        try{
+            user = userRepository.getReferenceById(userId);
+            deck = deckRepository.getReferenceById(deckId);
+        }catch (EntityNotFoundException e){
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, e.getMessage());
+        }
+
+        // check permission
+        if (! deck.getOwner().getId().equals(userId))
+            throw new AppException(ErrorCode.FORBIDDEN, "You're not owner of this deck!");
+
+        if(updateRequest == null || !updateRequest.hasUpdateField())
+            return;
+
+        if (updateRequest.name() != null && !updateRequest.name().equals(deck.getName())){
+            if (deckRepository.findByOwnerIdAndName(userId, updateRequest.name()).isPresent())
+                throw new AppException(ErrorCode.RESOURCE_ALREADY_EXIST, "Deck name already exist");
+            deck.setName(updateRequest.name());
+        }
+
+        if (updateRequest.description() != null){
+            deck.setDescription(updateRequest.description());
+        }
+
+        if (
+                updateRequest.topicId() != null
+                && !deck.getTopic().getId().equals(updateRequest.topicId())
+        ){
+            try{
+                deck.setTopic(topicRepository.getReferenceById(updateRequest.topicId()));
+            }catch (EntityNotFoundException e){
+                throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Topic not found");
+            }
+        }
+
+        deckRepository.save(deck);
+    }
 
 }

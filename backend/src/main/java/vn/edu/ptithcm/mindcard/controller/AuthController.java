@@ -131,7 +131,16 @@ public class AuthController {
             throw new AppException(ErrorCode.INVALID_JWT_TOKEN, "No token provided");
         }
         RefreshResponse res = authService.refreshAccessToken(refreshToken);
-        return ResponseEntity.ok(APIResponse.success(res));
+
+        ResponseCookie accessCookie = ResponseCookie.from(jwtProperties.accessTokenCookieName(), res.accessToken())
+                .path("/")
+                .httpOnly(true)
+                .sameSite("Strict")
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .body(APIResponse.success(res))
+                ;
     }
 
     @PostMapping("/forgot_password")

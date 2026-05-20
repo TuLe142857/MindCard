@@ -3,43 +3,38 @@ package vn.edu.ptithcm.mindcard.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
-@Table(name = "saved_decks")
+@Table(name = "saved_decks",
+        uniqueConstraints = {
+        @UniqueConstraint(name = "unique_saved_deck", columnNames = {"user_id", "deck_id"})
+        }
+)
+@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SavedDeck {
 
-    @Embeddable
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class SavedDeckId{
-        @Column(name = "user_id")
-        private Integer userId;
-
-        @Column(name = "deck_id")
-        private Integer deckId;
-    }
-
-    @EmbeddedId
-    private SavedDeckId deckId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @ManyToOne
-    @MapsId("userId")
     @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @MapsId("deckId")
     @JoinColumn(name = "deck_id")
     private Deck deck;
 
+    @CreationTimestamp
     @Column(name = "saved_at")
-    private LocalDateTime savedAt;
+    private Instant savedAt;
 }

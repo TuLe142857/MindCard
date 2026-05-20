@@ -22,7 +22,9 @@ public enum ErrorCode {
     RESOURCE_NOT_FOUND(404),
     INVALID_OTP(400),
 
-    FILE_UPLOAD_FAILED(400)
+    FILE_UPLOAD_FAILED(400),
+
+    ACTION_ALREADY_PERFORMED(400)
     ;
 
     /** ErrorCode as String */

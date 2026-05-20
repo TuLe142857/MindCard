@@ -8,12 +8,14 @@ import software.amazon.awssdk.services.s3.S3Client;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardCreateRequest;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardResponse;
 import vn.edu.ptithcm.mindcard.entity.Card;
+import vn.edu.ptithcm.mindcard.entity.CardVersion;
 import vn.edu.ptithcm.mindcard.entity.Deck;
 import vn.edu.ptithcm.mindcard.entity.User;
 import vn.edu.ptithcm.mindcard.entity.embeded.CardContent;
 import vn.edu.ptithcm.mindcard.exception.AppException;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.repository.CardRepository;
+import vn.edu.ptithcm.mindcard.repository.CardVersionRepository;
 import vn.edu.ptithcm.mindcard.repository.DeckRepository;
 import vn.edu.ptithcm.mindcard.repository.UserRepository;
 
@@ -27,6 +29,9 @@ import java.util.UUID;
 public class CardService {
     @Autowired
     private CardRepository cardRepository;
+
+    @Autowired
+    private CardVersionRepository cardVersionRepository;
 
     @Autowired
     private DeckRepository deckRepository;
@@ -82,12 +87,23 @@ public class CardService {
                     .audioKey(backAudioKey)
                     .build();
 
-            Card newCard = Card.builder()
-                    .type(request.type())
-                    .frontContent(frontContent)
-                    .backContent(backContent)
-                    .build();
+            Card newCard = cardRepository.save(
+                    Card.builder()
+                            .deck(deck)
+                            .build()
+            );
 
+            CardVersion cardVersion = cardVersionRepository.save(
+                    CardVersion.builder()
+                        .card(newCard)
+                        .version(1)
+                        .type(request.type())
+                        .frontContent(frontContent)
+                        .backContent(backContent)
+                        .build()
+            );
+
+            newCard.setLatestVersion(cardVersion);
             cardRepository.save(newCard);
         }
     }
