@@ -30,11 +30,7 @@ import java.util.List;
 public class JWTRequestFilter extends OncePerRequestFilter {
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
     private static final List<String> PUBLIC_ROUTES = List.of(
-            "/api/auth/register/**",
-            "/api/auth/logout",
-            "/api/auth/login",
-            "/api/auth/reset_password",
-            "/api/auth/forgot_password",
+            "/api/auth/**",
             "/v3/api-docs/**",
             "/swagger-ui/**"
     );

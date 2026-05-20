@@ -18,6 +18,7 @@ import vn.edu.ptithcm.mindcard.dto.request.auth.*;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.dto.response.auth.LoginResponse;
 import vn.edu.ptithcm.mindcard.dto.response.auth.RefreshResponse;
+import vn.edu.ptithcm.mindcard.exception.AppException;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.JwtService;
 import vn.edu.ptithcm.mindcard.service.AuthService;
@@ -35,20 +36,6 @@ public class AuthController {
 
     @Autowired
     JWTProperties jwtProperties;
-
-    @GetMapping("/whoami")
-    @Operation(summary = "Check whoami")
-    @ApiError(value = ErrorCode.UNAUTHENTICATED, description = "user not login")
-    public ResponseEntity<APIResponse.Success<?>> whoami(){
-        return ResponseEntity.ok(APIResponse.success(authService.getCurrentUserPrincipal()));
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)){
-//            return ResponseEntity.ok(APIResponse.success(authentication.getPrincipal()));
-//        }else{
-//            throw new AppException(ErrorCode.UNAUTHENTICATED, "user not login");
-//        }
-
-    }
 
     @PostMapping("/register/request")
     @Operation(summary = "Step 1/2 of registration")
@@ -94,7 +81,7 @@ public class AuthController {
         ResponseCookie refreshCookie = ResponseCookie.from(jwtProperties.refreshTokenCookieName(), token.refreshToken())
                 .maxAge(jwtProperties.refreshTokenExpirationSecond())
                 .httpOnly(true)
-                .path("/auth/refresh")
+                .path("/api/auth/refresh")
                 .sameSite("Strict")
                 .build();
 
@@ -140,6 +127,9 @@ public class AuthController {
         String refreshToken = (body != null && body.refreshToken() != null)
                 ? body.refreshToken()
                 : jwtService.extractRefreshTokenFromRequest(request);
+        if (refreshToken == null){
+            throw new AppException(ErrorCode.INVALID_JWT_TOKEN, "No token provided");
+        }
         RefreshResponse res = authService.refreshAccessToken(refreshToken);
         return ResponseEntity.ok(APIResponse.success(res));
     }
