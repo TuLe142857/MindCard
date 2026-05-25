@@ -39,6 +39,10 @@ public class Card {
     @OneToMany(mappedBy = "card")
     List<CardVersion> versions;
 
+    @Builder.Default
+    @Column(name = "is_deleted", columnDefinition = "boolean default false", nullable = false)
+    private Boolean isDeleted = false;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;

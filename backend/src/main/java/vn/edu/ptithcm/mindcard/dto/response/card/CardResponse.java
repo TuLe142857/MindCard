@@ -7,12 +7,6 @@ import vn.edu.ptithcm.mindcard.entity.Card;
 public record CardResponse(
         int id,
         Card.CardType type,
-        CardContentDTO front,
-        CardContentDTO back
-) {
-    public record CardContentDTO(
-            String text,
-            String imageUrl,
-            String audioUrl
-    ){}
-}
+        CardContentResponse front,
+        CardContentResponse back
+) { }

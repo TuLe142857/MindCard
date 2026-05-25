@@ -1,17 +1,30 @@
 package vn.edu.ptithcm.mindcard.dto.response.common;
 
-import lombok.Getter;
 import lombok.Builder;
+import org.springframework.data.domain.Page;
 
 @Builder
-@Getter
-public class PaginationMeta {
-    private final int currentPage;
-    private final int pageSize;
-
-    private final long totalItems;
-    private final long totalPages;
-
-    private final boolean hasNext;
-    private final boolean hasPrev;
+public record PaginationMeta(
+        int currentPage,
+        int pageSize,
+        long totalItems,
+        int totalPages,
+        boolean hasNext,
+        boolean hasPrev
+) {
+    /**
+     * Build PaginationMeta from Page object
+     * @param page page object
+     * @return pagination meta
+     */
+    public static  PaginationMeta fromPage(Page<?> page){
+        return PaginationMeta.builder()
+                .currentPage(page.getNumber() + 1)
+                .pageSize(page.getSize())
+                .totalItems(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .hasNext(page.hasNext())
+                .hasPrev(page.hasPrevious())
+                .build();
+    }
 }

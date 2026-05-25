@@ -7,6 +7,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import vn.edu.ptithcm.mindcard.config.properties.S3Properties;
 
@@ -37,6 +38,11 @@ public class S3Config {
                 .credentialsProvider(credentialsProvider)
                 .region(Region.of(s3Properties.region()))
                 .endpointOverride(URI.create(s3Properties.endpoint()))
+                .serviceConfiguration(
+                        S3Configuration.builder()
+                                .pathStyleAccessEnabled(true)
+                                .build()
+                )
                 .build();
     }
 }

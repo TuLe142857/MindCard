@@ -13,6 +13,8 @@ public interface UserCardProgressRepository extends JpaRepository<UserCardProgre
     @Query("""
     SELECT cp FROM UserCardProgress cp
     JOIN FETCH cp.cardVersion
+    JOIN FETCH cp.user
+    JOIN FETCH cp.card
     WHERE cp.user.id = :userId
       AND cp.card.id IN (
           SELECT c.id
@@ -21,6 +23,7 @@ public interface UserCardProgressRepository extends JpaRepository<UserCardProgre
           JOIN d.savedDecks sd
           WHERE sd.id = :savedDeckId
       )
+      AND cp.status != 'NEW'
       AND cp.nextReviewDate <= CURRENT_DATE
     ORDER BY cp.nextReviewDate ASC
 """)
@@ -30,6 +33,8 @@ public interface UserCardProgressRepository extends JpaRepository<UserCardProgre
     @Query("""
     SELECT cp FROM UserCardProgress cp
     JOIN FETCH cp.cardVersion
+    JOIN FETCH cp.user
+    JOIN FETCH cp.card
     WHERE cp.user.id = :userId
       AND cp.card.id IN (
           SELECT c.id
@@ -40,5 +45,5 @@ public interface UserCardProgressRepository extends JpaRepository<UserCardProgre
       )
       AND cp.status = 'NEW'
 """)
-    List<UserCardProgress> findNew(int userId, int deckId, Pageable pageable);
+    List<UserCardProgress> findNew(int userId, int savedDeckId, Pageable pageable);
 }

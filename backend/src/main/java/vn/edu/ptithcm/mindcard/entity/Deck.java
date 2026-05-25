@@ -59,6 +59,10 @@ public class Deck {
     @Column(name = "avg_rating", columnDefinition = "double precision default 0", nullable = false)
     private Double avgRating = 0D;
 
+    @Builder.Default
+    @Column(name = "is_deleted", columnDefinition = "boolean default false", nullable = false)
+    private Boolean isDeleted = false;
+
     @OneToMany(mappedBy = "deck", fetch = FetchType.LAZY)
     private List<Card> cards;
 

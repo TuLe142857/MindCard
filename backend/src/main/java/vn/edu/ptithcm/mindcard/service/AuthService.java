@@ -248,6 +248,7 @@ public class AuthService {
 
         User userObj = user.get();
         userObj.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(userObj);
     }
 
 }

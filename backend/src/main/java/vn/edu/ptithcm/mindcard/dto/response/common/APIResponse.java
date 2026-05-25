@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import java.time.Instant;
 import java.util.List;
@@ -26,10 +27,8 @@ public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResp
         this.message = message;
     }
 
-    @Schema(name = Success.SCHEMA_NAME)
     @Getter
     public static final class Success<T> extends APIResponse<T>{
-        public static final String SCHEMA_NAME="ResponseSuccess";
         private final T data;
 
         @Builder(access = AccessLevel.PRIVATE)
@@ -40,10 +39,8 @@ public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResp
 
     }
 
-    @Schema(name = Paginated.SCHEMA_NAME)
     @Getter
     public static final class Paginated<T> extends APIResponse<T>{
-        public static final String SCHEMA_NAME = "ResponseSuccessPaginated";
         private final List<T> data;
         private final PaginationMeta meta;
 
@@ -64,7 +61,7 @@ public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResp
 
         @Builder(access = AccessLevel.PRIVATE)
         private Error(String errorCode, Object errorDetails, String message) {
-            super(true, message);
+            super(false, message);
             this.errorCode = errorCode;
             this.errorDetails = errorDetails;
         }
@@ -75,6 +72,7 @@ public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResp
     public static APIResponse.Success<Void> success() {
         return APIResponse.Success.<Void>builder().build();
     }
+
     public static <T> APIResponse.Success<T> success(T data){
         return Success.<T>builder()
                 .data(data)
@@ -88,14 +86,33 @@ public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResp
                 .build();
     }
 
-    public static <T> APIResponse<T> paginated(List<T> data, PaginationMeta meta){
+    public static <T> APIResponse.Paginated<T> paginated(Page<T> page){
+        List<T> data = page.getContent();
+        PaginationMeta meta = PaginationMeta.fromPage(page);
+        return Paginated.<T>builder()
+                .data(data)
+                .meta(meta)
+                .build();
+    }
+
+    public static <T> APIResponse.Paginated<T> paginated(Page<T> page, String message){
+        List<T> data = page.getContent();
+        PaginationMeta meta = PaginationMeta.fromPage(page);
+        return Paginated.<T>builder()
+                .data(data)
+                .meta(meta)
+                .message(message)
+                .build();
+    }
+
+    public static <T> APIResponse.Paginated<T> paginated(List<T> data, PaginationMeta meta){
         return APIResponse.Paginated.<T>builder()
                 .data(data)
                 .meta(meta)
                 .build();
     }
 
-    public static <T> APIResponse<T> paginated(List<T> data, PaginationMeta meta, String message){
+    public static <T> APIResponse.Paginated<T> paginated(List<T> data, PaginationMeta meta, String message){
         return APIResponse.Paginated.<T>builder()
                 .data(data)
                 .meta(meta)
@@ -103,20 +120,20 @@ public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResp
                 .build();
     }
 
-    public static APIResponse<Void> error(ErrorCode error){
+    public static APIResponse.Error error(ErrorCode error){
         return APIResponse.Error.<Void>builder()
                 .errorCode(error.getCode())
                 .build();
     }
 
-    public static APIResponse<Void> error(ErrorCode error, String message){
+    public static APIResponse.Error error(ErrorCode error, String message){
         return APIResponse.Error.<Void>builder()
                 .errorCode(error.getCode())
                 .message(message)
                 .build();
     }
 
-    public static APIResponse<Void> error(ErrorCode error, Object errorDetails){
+    public static APIResponse.Error error(ErrorCode error, Object errorDetails){
         return APIResponse.Error.<Void>builder()
                 .errorCode(error.getCode())
                 .errorDetails(errorDetails)

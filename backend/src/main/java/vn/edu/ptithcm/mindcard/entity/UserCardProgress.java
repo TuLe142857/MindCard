@@ -55,10 +55,19 @@ public class UserCardProgress {
     private CardStatus status = CardStatus.NEW;
 
     @Builder.Default
-    @Column(name = "ease_factor", nullable = false)
-    private Float easeFactor = 2.5F;
+    @Column(name = "ease_factor", columnDefinition = "double precision default 2.5", nullable = false)
+    private Double easeFactor = 2.5;
 
-    @Column(name = "next_review_date")
+    @Builder.Default
+    @Column(name = "interval", columnDefinition = "integer default 1", nullable = false)
+    private Integer interval = 1;
+
+    @Builder.Default
+    @Column(name = "repetitions", columnDefinition = "integer default 0", nullable = false)
+    private Integer repetitions = 0;
+
+    @Builder.Default
+    @Column(name = "next_review_date", columnDefinition = "timestamp default now()", nullable = false)
     private Instant nextReviewDate = Instant.now();
 
 }

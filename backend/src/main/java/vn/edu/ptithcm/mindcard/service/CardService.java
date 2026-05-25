@@ -4,9 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.services.s3.S3Client;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardCreateRequest;
-import vn.edu.ptithcm.mindcard.dto.response.card.CardResponse;
+import vn.edu.ptithcm.mindcard.dto.request.card.CardUpdateRequest;
 import vn.edu.ptithcm.mindcard.entity.Card;
 import vn.edu.ptithcm.mindcard.entity.CardVersion;
 import vn.edu.ptithcm.mindcard.entity.Deck;
@@ -21,7 +20,6 @@ import vn.edu.ptithcm.mindcard.repository.UserRepository;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +40,14 @@ public class CardService {
     @Autowired
     private UserRepository userRepository;
 
+
+    /**
+     * Upload file and return keys
+     * @param file -
+     * @param keyPrefix -
+     * @return -
+     * @throws AppException -
+     */
     private String uploadFile(MultipartFile file, String keyPrefix) throws AppException {
         if (file  == null || file.isEmpty()){
             return null;
@@ -108,7 +114,98 @@ public class CardService {
         }
     }
 
-    public void getCardsInDecks(int deckId){
+    private Card getCardForUpdate(int userId, int cardId) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
+        if (!card.getDeck().getOwner().getId().equals(userId)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "You are not owner of this card");
+        }
+        return card;
+    }
+
+    private CardVersion createNewVersionFromLatest(Card card) {
+        CardVersion latestVersion = card.getLatestVersion();
+        CardContent oldFront = latestVersion.getFrontContent();
+        CardContent newFront = CardContent.builder()
+                .text(oldFront != null ? oldFront.getText() : null)
+                .imageKey(oldFront != null ? oldFront.getImageKey() : null)
+                .audioKey(oldFront != null ? oldFront.getAudioKey() : null)
+                .build();
+
+        CardContent oldBack = latestVersion.getBackContent();
+        CardContent newBack = CardContent.builder()
+                .text(oldBack != null ? oldBack.getText() : null)
+                .imageKey(oldBack != null ? oldBack.getImageKey() : null)
+                .audioKey(oldBack != null ? oldBack.getAudioKey() : null)
+                .build();
+
+        return CardVersion.builder()
+                .card(card)
+                .version(latestVersion.getVersion() + 1)
+                .type(latestVersion.getType())
+                .frontContent(newFront)
+                .backContent(newBack)
+                .build();
+    }
+
+    private void saveNewVersion(Card card, CardVersion newVersion) {
+        newVersion = cardVersionRepository.save(newVersion);
+        card.setLatestVersion(newVersion);
+        cardRepository.save(card);
+    }
+
+    @Transactional
+    public void update(int userId, int cardId, CardUpdateRequest updateRequest) {
+        Card card = getCardForUpdate(userId, cardId);
+        CardVersion newVersion = createNewVersionFromLatest(card);
+
+        if (updateRequest.type() != null){
+            newVersion.setType(updateRequest.type());
+        }
+        if (updateRequest.frontText() != null) {
+            newVersion.getFrontContent().setText(updateRequest.frontText());
+        }
+        if (updateRequest.backText() != null) {
+            newVersion.getBackContent().setText(updateRequest.backText());
+        }
+
+        saveNewVersion(card, newVersion);
+    }
+
+    @Transactional
+    public void updateFrontImage(int userId, int cardId, MultipartFile file) {
+        Card card = getCardForUpdate(userId, cardId);
+        String key = uploadFile(file, "img_");
+        CardVersion newVersion = createNewVersionFromLatest(card);
+        newVersion.getFrontContent().setImageKey(key);
+        saveNewVersion(card, newVersion);
+    }
+
+    @Transactional
+    public void updateFrontAudio(int userId, int cardId, MultipartFile file) {
+        Card card = getCardForUpdate(userId, cardId);
+        String key = uploadFile(file, "audio_");
+        CardVersion newVersion = createNewVersionFromLatest(card);
+        newVersion.getFrontContent().setAudioKey(key);
+        saveNewVersion(card, newVersion);
+    }
+
+    @Transactional
+    public void updateBackImage(int userId, int cardId, MultipartFile file) {
+        Card card = getCardForUpdate(userId, cardId);
+        String key = uploadFile(file, "img_");
+        CardVersion newVersion = createNewVersionFromLatest(card);
+        newVersion.getBackContent().setImageKey(key);
+        saveNewVersion(card, newVersion);
+    }
+
+    @Transactional
+    public void updateBackAudio(int userId, int cardId, MultipartFile file) {
+        Card card = getCardForUpdate(userId, cardId);
+        String key = uploadFile(file, "audio_");
+        CardVersion newVersion = createNewVersionFromLatest(card);
+        newVersion.getBackContent().setAudioKey(key);
+        saveNewVersion(card, newVersion);
     }
 }
