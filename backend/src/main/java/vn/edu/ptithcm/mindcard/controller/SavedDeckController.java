@@ -32,20 +32,6 @@ public class SavedDeckController {
     @Autowired
     private StudyService studyService;
 
-    @GetMapping("")
-    @Operation(summary = "Get list of saved decks")
-    public ResponseEntity<APIResponse.Paginated<SavedDeckResponse>> getSavedDecks(
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit
-    ){
-        Pageable pageable = PageRequest.of(page - 1, limit);
-        int userId = userPrincipal.getId();
-
-        var savedDecks = savedDeckService.listSavedDecks(userId, pageable);
-        return ResponseEntity.ok(APIResponse.paginated(savedDecks));
-    }
-
     @GetMapping("/{savedDeckId}")
     @Operation(summary = "Get Saved Deck Summary")
     public ResponseEntity<APIResponse.Success<?>> getSavedDeckSummary(

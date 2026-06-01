@@ -17,9 +17,9 @@ import vn.edu.ptithcm.mindcard.repository.UserCardProgressRepository;
 
 import java.util.List;
 
-
 @Service
 public class SavedDeckService {
+
     @Autowired
     private SavedDeckRepository savedDeckRepository;
 
@@ -29,32 +29,35 @@ public class SavedDeckService {
     @Autowired
     private UserCardProgressRepository userCardProgressRepository;
 
-    public Page<SavedDeckResponse> listSavedDecks(int userId, Pageable pageable){
+    public Page<SavedDeckResponse> listSavedDecks(int userId, Pageable pageable) {
         return savedDeckRepository.findByUserId(userId, pageable).map(
                 savedDeck -> SavedDeckResponse.builder()
+                        .id(savedDeck.getId())
                         .saveFrom(savedDeck.getDeck().getId())
                         .name(savedDeck.getDeck().getName())
-                        .username(savedDeck.getUser().getUsername())
+                        .creator(savedDeck.getDeck().getOwner().getUsername())
+                        .topic(savedDeck.getDeck().getTopic().getName())
+                        .description(savedDeck.getDeck().getDescription())
                         .build()
         );
     }
 
-    public DeckSynSummaryResponse checkSyncStatus(int userId, int savedDeckId) throws AppException{
+    public DeckSynSummaryResponse checkSyncStatus(int userId, int savedDeckId) throws AppException {
         SavedDeck savedDeck;
-        try{
+        try {
             savedDeck = savedDeckRepository.getReferenceById(savedDeckId);
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
         }
 
         return DeckSynSummaryResponse.builder().build();
     }
 
-    public List<CardDiffResponse> cardsDiff(int userId, int savedDeckId){
+    public List<CardDiffResponse> cardsDiff(int userId, int savedDeckId) {
         return List.of();
     }
 
-    public void syncAll(int userId, int savedDeckId){
+    public void syncAll(int userId, int savedDeckId) {
 
     }
 }

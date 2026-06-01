@@ -13,10 +13,12 @@ import vn.edu.ptithcm.mindcard.annotation.ApiErrors;
 import vn.edu.ptithcm.mindcard.dto.request.common.SingleImageFileUploadRequest;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
+import vn.edu.ptithcm.mindcard.dto.response.deck.SavedDeckResponse;
 import vn.edu.ptithcm.mindcard.dto.response.user.UserPublicProfileResponse;
 import vn.edu.ptithcm.mindcard.dto.response.user.UserPrivateProfileResponse;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
+import vn.edu.ptithcm.mindcard.service.SavedDeckService;
 import vn.edu.ptithcm.mindcard.service.UserService;
 import vn.edu.ptithcm.mindcard.service.DeckService;
 import org.springframework.data.domain.Page;
@@ -31,6 +33,7 @@ public class UserController {
 
     private final UserService userService;
     private final DeckService deckService;
+    private final SavedDeckService savedDeckService;
 
     @GetMapping("/me")
     @Operation(summary = "Get current user's private profile (includes email)")
@@ -71,8 +74,16 @@ public class UserController {
     }
 
     @GetMapping("/me/saved-decks")
-    public ResponseEntity<APIResponse.Success<?>> getSavedDeck() {
-        return ResponseEntity.ok(APIResponse.success());
+    @Operation(summary = "Get current user's saved decks")
+    public ResponseEntity<APIResponse.Paginated<SavedDeckResponse>> getSavedDeck(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, limit);
+        int userId = userPrincipal.getId();
+        Page<SavedDeckResponse> res = savedDeckService.listSavedDecks(userId, pageable);
+        return ResponseEntity.ok(APIResponse.paginated(res));
     }
 
     @GetMapping("/{username}")
