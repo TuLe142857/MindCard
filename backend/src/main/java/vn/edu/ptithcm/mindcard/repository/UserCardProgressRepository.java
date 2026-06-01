@@ -46,4 +46,32 @@ public interface UserCardProgressRepository extends JpaRepository<UserCardProgre
       AND cp.status = 'NEW'
 """)
     List<UserCardProgress> findNew(int userId, int savedDeckId, Pageable pageable);
+
+    @Query("""
+    SELECT COUNT(c) FROM Card c
+    WHERE c.deck.id = :deckId
+      AND c.isDeleted = false
+      AND c.id NOT IN (
+          SELECT cp.card.id FROM UserCardProgress cp
+          WHERE cp.user.id = :userId
+      )
+    """)
+    int countNewCards(int userId, int deckId);
+
+    @Query("""
+    SELECT COUNT(cp) FROM UserCardProgress cp
+    WHERE cp.user.id = :userId
+      AND cp.card.deck.id = :deckId
+      AND cp.card.isDeleted = false
+      AND cp.cardVersion.version < cp.card.latestVersion.version
+    """)
+    int countUpdatedCards(int userId, int deckId);
+
+    @Query("""
+    SELECT COUNT(cp) FROM UserCardProgress cp
+    WHERE cp.user.id = :userId
+      AND cp.card.deck.id = :deckId
+      AND cp.card.isDeleted = true
+    """)
+    int countDeletedCards(int userId, int deckId);
 }
