@@ -1,11 +1,15 @@
 package vn.edu.ptithcm.mindcard.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardCreateRequest;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardUpdateRequest;
+import vn.edu.ptithcm.mindcard.dto.response.card.CardContentResponse;
+import vn.edu.ptithcm.mindcard.dto.response.card.CardResponse;
 import vn.edu.ptithcm.mindcard.entity.Card;
 import vn.edu.ptithcm.mindcard.entity.CardVersion;
 import vn.edu.ptithcm.mindcard.entity.Deck;
@@ -39,6 +43,57 @@ public class CardService {
 
     @Autowired
     private UserRepository userRepository;
+
+    /**
+     * Retrieves a paginated list of cards for a specific deck.
+     * <ul>
+     *     <li>If deck is {@code PRIVATE} only the {@code owner} of the deck is allowed to list its cards.</li>
+     *     <li>If deck is {@code PUBLIC} anyone can list its cards</li>
+     * </ul>
+     *
+     * @param userId the ID of the user requesting the list.
+     * @param deckId the ID of the deck.
+     * @param pageable pagination and sorting information.
+     * @return a page of cards mapped to {@link CardResponse} DTOs.
+     * @throws AppException with the following {@link ErrorCode}s:
+     * <ul>
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not allowed to access this deck and its cards.</li>
+     * </ul>
+     */
+    public Page<CardResponse> getCardList(int userId, int deckId, Pageable pageable) throws AppException {
+        Deck deck = deckRepository.findById(deckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Deck not found"));
+
+        if (
+                (deck.getVisibility() != Deck.DeckVisibility.PUBLIC)
+                && (!deck.getOwner().getId().equals(userId))
+        ) {
+            throw new AppException(ErrorCode.FORBIDDEN, "You are not allowed to access this deck");
+        }
+
+        Page<Card> cards = cardRepository.findByDeckId(deckId, pageable);
+        return cards.map(card -> {
+            CardVersion latest = card.getLatestVersion();
+            CardContent front = latest.getFrontContent();
+            CardContent back = latest.getBackContent();
+
+            return CardResponse.builder()
+                    .id(card.getId())
+                    .type(latest.getType())
+                    .front(CardContentResponse.builder()
+                            .text(front != null ? front.getText() : null)
+                            .imageUrl(front != null && front.getImageKey() != null ? storageService.generatePresignedUrl(front.getImageKey(), java.time.Duration.ofHours(1)) : null)
+                            .audioUrl(front != null && front.getAudioKey() != null ? storageService.generatePresignedUrl(front.getAudioKey(), java.time.Duration.ofHours(1)) : null)
+                            .build())
+                    .back(CardContentResponse.builder()
+                            .text(back != null ? back.getText() : null)
+                            .imageUrl(back != null && back.getImageKey() != null ? storageService.generatePresignedUrl(back.getImageKey(), java.time.Duration.ofHours(1)) : null)
+                            .audioUrl(back != null && back.getAudioKey() != null ? storageService.generatePresignedUrl(back.getAudioKey(), java.time.Duration.ofHours(1)) : null)
+                            .build())
+                    .build();
+        });
+    }
 
 
     /**
