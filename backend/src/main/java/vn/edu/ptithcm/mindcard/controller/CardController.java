@@ -1,14 +1,19 @@
 package vn.edu.ptithcm.mindcard.controller;
 
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardReviewRequest;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardUpdateRequest;
 import vn.edu.ptithcm.mindcard.dto.request.common.SingleAudioFileUploadRequest;
@@ -22,6 +27,7 @@ import vn.edu.ptithcm.mindcard.service.StudyService;
 @RequestMapping("/api/cards")
 @Tag(name = "Card")
 public class CardController {
+
     @Autowired
     private StudyService studyService;
 
@@ -34,8 +40,9 @@ public class CardController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
             @RequestBody @Valid CardUpdateRequest body
-    )
-    {
+    ) {
+        int userId = userPrincipal.getId();
+        cardService.update(userId, cardId, body);
         return ResponseEntity.ok(APIResponse.success());
     }
 
@@ -45,7 +52,7 @@ public class CardController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
             @ModelAttribute @Valid SingleImageFileUploadRequest body
-    ){
+    ) {
         int userId = userPrincipal.getId();
         cardService.updateFrontImage(userId, cardId, body.file());
         return ResponseEntity.ok(APIResponse.success());
@@ -57,7 +64,7 @@ public class CardController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
             @ModelAttribute @Valid SingleAudioFileUploadRequest body
-    ){
+    ) {
         int userId = userPrincipal.getId();
         cardService.updateFrontAudio(userId, cardId, body.file());
         return ResponseEntity.ok(APIResponse.success());
@@ -69,7 +76,7 @@ public class CardController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
             @ModelAttribute @Valid SingleImageFileUploadRequest body
-    ){
+    ) {
         int userId = userPrincipal.getId();
         cardService.updateBackImage(userId, cardId, body.file());
         return ResponseEntity.ok(APIResponse.success());
@@ -81,12 +88,11 @@ public class CardController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
             @ModelAttribute SingleAudioFileUploadRequest body
-    ){
+    ) {
         int userId = userPrincipal.getId();
         cardService.updateBackAudio(userId, cardId, body.file());
         return ResponseEntity.ok(APIResponse.success());
     }
-
 
     @PostMapping("/{cardId}/review")
     @Operation(summary = "Set card study quality [0-5] to calculate next review date")
@@ -94,7 +100,7 @@ public class CardController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
             @RequestBody CardReviewRequest body
-    ){
+    ) {
         studyService.setCardReviewQuality(userPrincipal.getId(), cardId, body.quality());
         return ResponseEntity.ok(APIResponse.success());
     }
