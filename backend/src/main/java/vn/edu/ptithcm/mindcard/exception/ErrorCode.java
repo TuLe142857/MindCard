@@ -6,31 +6,28 @@ import lombok.Getter;
 public enum ErrorCode {
     SERVER_ERROR(500),
     NOT_FOUND(404),
-    VALIDATION_ERROR(401),
-    LOGIN_FAILED(400),
-
-    UNAUTHENTICATED(403),
+    VALIDATION_ERROR(422),
+    LOGIN_FAILED(401),
+    UNAUTHENTICATED(401),
     USER_NOT_FOUND(404),
-
-    FORBIDDEN(400),
-
-    JWT_TOKEN_EXPIRED(400),
-    INVALID_JWT_TOKEN(400),
-    JWT_TOKEN_REVOKED(400),
-
+    FORBIDDEN(403),
+    JWT_TOKEN_EXPIRED(401),
+    INVALID_JWT_TOKEN(401),
+    JWT_TOKEN_REVOKED(401),
     RESOURCE_ALREADY_EXIST(409),
     RESOURCE_NOT_FOUND(404),
     INVALID_OTP(400),
+    FILE_UPLOAD_FAILED(500),
+    ACTION_ALREADY_PERFORMED(400);
 
-    FILE_UPLOAD_FAILED(400),
-
-    ACTION_ALREADY_PERFORMED(400)
-    ;
-
-    /** ErrorCode as String */
+    /**
+     * ErrorCode as String
+     */
     private final String code;
 
-    /** Http status code for API response */
+    /**
+     * Http status code for API response
+     */
     private final int httpStatusCode;
 
     ErrorCode(String code, int httpStatusCode) {
@@ -38,7 +35,7 @@ public enum ErrorCode {
         this.httpStatusCode = httpStatusCode;
     }
 
-    ErrorCode(int httpStatusCode){
+    ErrorCode(int httpStatusCode) {
         this.code = name();
         this.httpStatusCode = httpStatusCode;
     }
