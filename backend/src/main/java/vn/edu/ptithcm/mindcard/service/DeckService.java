@@ -243,6 +243,30 @@ public class DeckService {
     }
 
     /**
+     * Soft deletes a deck by setting isDeleted to true.
+     *
+     * @param userId the ID of the requesting user.
+     * @param deckId the ID of the deck to delete.
+     * @throws AppException if any validation fails, specifically:
+     * <ul>
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck.</li>
+     * </ul>
+     */
+    @Transactional
+    public void deleteDeck(int userId, int deckId) throws AppException {
+        Deck deck = deckRepository.findById(deckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Deck not found"));
+        
+        if (!deck.getOwner().getId().equals(userId)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "You are not owner of this deck");
+        }
+        
+        deck.setIsDeleted(true);
+        deckRepository.save(deck);
+    }
+
+    /**
      * Searches for public decks by keyword with pagination.
      *
      * @param keyword the search keyword matching name, description, or topic name

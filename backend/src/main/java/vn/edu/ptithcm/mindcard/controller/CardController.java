@@ -4,16 +4,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import vn.edu.ptithcm.mindcard.annotation.ApiError;
+import vn.edu.ptithcm.mindcard.annotation.ApiErrors;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardReviewRequest;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardUpdateRequest;
 import vn.edu.ptithcm.mindcard.dto.request.common.SingleAudioFileUploadRequest;
 import vn.edu.ptithcm.mindcard.dto.request.common.SingleImageFileUploadRequest;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
+import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 import vn.edu.ptithcm.mindcard.service.CardService;
 import vn.edu.ptithcm.mindcard.service.StudyService;
@@ -30,14 +39,18 @@ public class CardController {
     private CardService cardService;
 
     @DeleteMapping("/{cardId}")
-    @Operation(summary = "Delete card - coming soon")
+    @Operation(summary = "Delete card", description = "Soft deletes a card owned by the user.")
+    @ApiErrors({
+        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Card not found"),
+        @ApiError(value = ErrorCode.FORBIDDEN, description = "User is not the owner of the card's deck")
+    })
     public ResponseEntity<APIResponse.Success<?>> deleteCard(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId
-    ){
+    ) {
+        cardService.deleteCard(userPrincipal.getId(), cardId);
         return ResponseEntity.ok(APIResponse.success());
     }
-
 
     @PostMapping("/{cardId}")
     @Operation(summary = "Update card")

@@ -1,11 +1,17 @@
 package vn.edu.ptithcm.mindcard.service;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import vn.edu.ptithcm.mindcard.dto.request.card.CardCreateRequest;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardUpdateRequest;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardContentResponse;
@@ -22,13 +28,9 @@ import vn.edu.ptithcm.mindcard.repository.CardVersionRepository;
 import vn.edu.ptithcm.mindcard.repository.DeckRepository;
 import vn.edu.ptithcm.mindcard.repository.UserRepository;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
-
 @Service
 public class CardService {
+
     @Autowired
     private CardRepository cardRepository;
 
@@ -47,8 +49,9 @@ public class CardService {
     /**
      * Retrieves a paginated list of cards for a specific deck.
      * <ul>
-     *     <li>If deck is {@code PRIVATE} only the {@code owner} of the deck is allowed to list its cards.</li>
-     *     <li>If deck is {@code PUBLIC} anyone can list its cards</li>
+     * <li>If deck is {@code PRIVATE} only the {@code owner} of the deck is
+     * allowed to list its cards.</li>
+     * <li>If deck is {@code PUBLIC} anyone can list its cards</li>
      * </ul>
      *
      * @param userId the ID of the user requesting the list.
@@ -58,17 +61,16 @@ public class CardService {
      * @throws AppException with the following {@link ErrorCode}s:
      * <ul>
      * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not allowed to access this deck and its cards.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not allowed to access
+     * this deck and its cards.</li>
      * </ul>
      */
     public Page<CardResponse> getCardList(int userId, int deckId, Pageable pageable) throws AppException {
         Deck deck = deckRepository.findById(deckId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Deck not found"));
 
-        if (
-                (deck.getVisibility() != Deck.DeckVisibility.PUBLIC)
-                && (!deck.getOwner().getId().equals(userId))
-        ) {
+        if ((deck.getVisibility() != Deck.DeckVisibility.PUBLIC)
+                && (!deck.getOwner().getId().equals(userId))) {
             throw new AppException(ErrorCode.FORBIDDEN, "You are not allowed to access this deck");
         }
 
@@ -95,16 +97,16 @@ public class CardService {
         });
     }
 
-
     /**
      * Upload file and return keys
+     *
      * @param file -
      * @param keyPrefix -
      * @return -
      * @throws AppException -
      */
     private String uploadFile(MultipartFile file, String keyPrefix) throws AppException {
-        if (file  == null || file.isEmpty()){
+        if (file == null || file.isEmpty()) {
             return null;
         }
         String key = keyPrefix + UUID.randomUUID().toString();
@@ -115,7 +117,7 @@ public class CardService {
                     file.getContentType(),
                     file.getSize()
             );
-        } catch (IOException ioException){
+        } catch (IOException ioException) {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
         return key;
@@ -126,10 +128,11 @@ public class CardService {
         Deck deck = deckRepository.getReferenceById(deckId);
         User user = userRepository.getReferenceById(userId);
 
-        if (! deck.getOwner().getId().equals(user.getId()))
+        if (!deck.getOwner().getId().equals(user.getId())) {
             throw new AppException(ErrorCode.FORBIDDEN);
+        }
 
-        for (CardCreateRequest request: createRequests){
+        for (CardCreateRequest request : createRequests) {
 
             String frontImageKey = uploadFile(request.frontImage(), "img_");
             String frontAudioKey = uploadFile(request.frontAudio(), "audio_");
@@ -156,12 +159,12 @@ public class CardService {
 
             CardVersion cardVersion = cardVersionRepository.save(
                     CardVersion.builder()
-                        .card(newCard)
-                        .version(1)
-                        .type(request.type())
-                        .frontContent(frontContent)
-                        .backContent(backContent)
-                        .build()
+                            .card(newCard)
+                            .version(1)
+                            .type(request.type())
+                            .frontContent(frontContent)
+                            .backContent(backContent)
+                            .build()
             );
 
             newCard.setLatestVersion(cardVersion);
@@ -169,7 +172,20 @@ public class CardService {
         }
     }
 
-    private Card getCardForUpdate(int userId, int cardId) {
+    /**
+     * Retrieves a {@link Card} for modification (e.g., {@code UPDATE}, {@code DELETE})
+     * and verifies that the requesting user is the owner of the card's deck.
+     *
+     * @param userId the ID of the user requesting the modification.
+     * @param cardId the ID of the card to retrieve.
+     * @return the requested {@link Card}.
+     * @throws AppException if any validation fails, specifically:
+     * <ul>
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
+     * </ul>
+     */
+    private Card getCardForUpdate(int userId, int cardId) throws AppException{
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -215,7 +231,7 @@ public class CardService {
         Card card = getCardForUpdate(userId, cardId);
         CardVersion newVersion = createNewVersionFromLatest(card);
 
-        if (updateRequest.type() != null){
+        if (updateRequest.type() != null) {
             newVersion.setType(updateRequest.type());
         }
         if (updateRequest.frontText() != null) {
@@ -226,6 +242,28 @@ public class CardService {
         }
 
         saveNewVersion(card, newVersion);
+    }
+
+    /**
+     * Soft deletes a card by setting isDeleted to true.
+     *
+     * @param userId the ID of the requesting user.
+     * @param cardId the ID of the card to delete.
+     * @throws AppException if any validation fails, specifically:
+     * <ul>
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - Bubbled up from
+     * {@link #getCardForUpdate(int, int)} if the card is not found.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - Bubbled up from
+     * {@link #getCardForUpdate(int, int)} if the card's deck does not belong to
+     * the user.</li>
+     * </ul>
+     * @see #getCardForUpdate(int, int)
+     */
+    @Transactional
+    public void deleteCard(int userId, int cardId) {
+        Card card = getCardForUpdate(userId, cardId);
+        card.setIsDeleted(true);
+        cardRepository.save(card);
     }
 
     @Transactional
