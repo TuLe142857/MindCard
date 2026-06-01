@@ -7,11 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import vn.edu.ptithcm.mindcard.dto.request.deck.UpdateSavedDeckRequest;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardDiffResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSynSummaryResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.SavedDeckResponse;
 import vn.edu.ptithcm.mindcard.entity.Card;
 import vn.edu.ptithcm.mindcard.entity.CardVersion;
+import vn.edu.ptithcm.mindcard.entity.Deck;
 import vn.edu.ptithcm.mindcard.entity.SavedDeck;
 import vn.edu.ptithcm.mindcard.entity.UserCardProgress;
 import vn.edu.ptithcm.mindcard.exception.AppException;
@@ -46,11 +48,14 @@ public class SavedDeckService {
      *
      * @param userId the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck.
-     * @return a {@link SavedDeckResponse} containing summary and progress stats.
+     * @return a {@link SavedDeckResponse} containing summary and progress
+     * stats.
      * @throws AppException if any validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck does not exist.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the saved deck does not belong to the user.</li>
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck does not
+     * exist.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the saved deck does not belong to
+     * the user.</li>
      * </ul>
      */
     public SavedDeckResponse getSavedDeckSummary(int userId, int savedDeckId) throws AppException {
@@ -64,8 +69,46 @@ public class SavedDeckService {
         return mapToSavedDeckResponse(savedDeck, userId);
     }
 
+    /**
+     * Updates the custom name and description of a user's saved deck.
+     *
+     * @param userId the ID of the requesting user.
+     * @param savedDeckId the ID of the saved deck to update.
+     * @param request the request containing the new name and description.
+     * @return a {@link SavedDeckResponse} reflecting the updated saved deck.
+     * @throws AppException if any validation fails, specifically:
+     * <ul>
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck does not
+     * exist.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the saved deck does not belong to
+     * the user.</li>
+     * </ul>
+     */
+    public SavedDeckResponse updateSavedDeck(int userId, int savedDeckId, UpdateSavedDeckRequest request) throws AppException {
+        SavedDeck savedDeck = savedDeckRepository.findById(savedDeckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Saved deck not found"));
+
+        if (!savedDeck.getUser().getId().equals(userId)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "You do not own this saved deck");
+        }
+
+        if (request.name() != null) {
+            savedDeck.setName(request.name());
+        }
+        if (request.description() != null) {
+            savedDeck.setDescription(request.description());
+        }
+
+        savedDeckRepository.save(savedDeck);
+
+        return mapToSavedDeckResponse(savedDeck, userId);
+    }
+
     private SavedDeckResponse mapToSavedDeckResponse(SavedDeck savedDeck, int userId) {
-        int deckId = savedDeck.getDeck().getId();
+
+        Deck originalDeck = savedDeck.getDeck();
+        int deckId = originalDeck.getId();
+
         int totalCards = userCardProgressRepository.countTotalCards(userId, deckId);
         int newCards = userCardProgressRepository.countCardsByStatus(userId, deckId, UserCardProgress.CardStatus.NEW);
         int learningCards = userCardProgressRepository.countCardsByStatus(userId, deckId, UserCardProgress.CardStatus.LEARNING);
@@ -79,11 +122,12 @@ public class SavedDeckService {
 
         return SavedDeckResponse.builder()
                 .id(savedDeck.getId())
-                .saveFrom(deckId)
-                .name(savedDeck.getDeck().getName())
+                .originalDeckId(deckId)
+                .originalDeckName(originalDeck.getName())
                 .creator(savedDeck.getDeck().getOwner().getUsername())
-                .topic(savedDeck.getDeck().getTopic().getName())
-                .description(savedDeck.getDeck().getDescription())
+                .name(savedDeck.getName() != null ? savedDeck.getName() : originalDeck.getName())
+                .description(savedDeck.getDescription() != null ? savedDeck.getDescription() : originalDeck.getDescription())
+                .topic(originalDeck.getTopic().getName())
                 .totalCards(totalCards)
                 .newCards(newCards)
                 .learningCards(learningCards)

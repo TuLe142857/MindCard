@@ -114,6 +114,8 @@ public class DeckService {
                 SavedDeck.builder()
                         .user(user)
                         .deck(deck)
+                        .name(deck.getName())
+                        .description(deck.getDescription())
                         .build()
         );
 

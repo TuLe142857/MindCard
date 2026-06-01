@@ -9,9 +9,12 @@ public record SavedDeckResponse(
         Integer id,
 
         @Schema(description = "ID of the original Deck")
-        Integer saveFrom,
+        Integer originalDeckId,
 
-        @Schema(description = "Name of the deck")
+        @Schema(description = "Name of original Deck")
+        String originalDeckName,
+
+        @Schema(description = "Name of saved deck")
         String name,
 
         @Schema(description = "Username of the original creator of the deck")
@@ -20,7 +23,7 @@ public record SavedDeckResponse(
         @Schema(description = "Topic name of the deck")
         String topic,
 
-        @Schema(description = "Description of the deck", nullable = true)
+        @Schema(description = "Description of saved deck", nullable = true)
         String description,
 
         @Schema(description = "Total number of cards in the deck", nullable = true)

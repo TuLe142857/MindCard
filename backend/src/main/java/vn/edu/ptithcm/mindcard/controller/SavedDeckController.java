@@ -19,8 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
 import vn.edu.ptithcm.mindcard.annotation.ApiErrors;
+import vn.edu.ptithcm.mindcard.dto.request.deck.UpdateSavedDeckRequest;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardDiffResponse;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardResponse;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
@@ -54,6 +56,22 @@ public class SavedDeckController {
             @PathVariable int savedDeckId
     ) {
         SavedDeckResponse response = savedDeckService.getSavedDeckSummary(userPrincipal.getId(), savedDeckId);
+        return ResponseEntity.ok(APIResponse.success(response));
+    }
+
+    @PatchMapping("/{savedDeckId}")
+    @Operation(summary = "Update Saved Deck name and description")
+    @ApiErrors({
+        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
+        @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the user"),
+        @ApiError(value = ErrorCode.VALIDATION_ERROR, description = "Invalid request body")
+    })
+    public ResponseEntity<APIResponse.Success<SavedDeckResponse>> updateSavedDeck(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable int savedDeckId,
+            @Valid @RequestBody UpdateSavedDeckRequest request
+    ) {
+        SavedDeckResponse response = savedDeckService.updateSavedDeck(userPrincipal.getId(), savedDeckId, request);
         return ResponseEntity.ok(APIResponse.success(response));
     }
 

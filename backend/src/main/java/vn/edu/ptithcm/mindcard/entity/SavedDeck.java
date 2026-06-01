@@ -26,6 +26,12 @@ public class SavedDeck {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "name")
+    String name;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    String description;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
