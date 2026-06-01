@@ -42,5 +42,8 @@ public record SavedDeckResponse(
         Integer dueCards,
 
         @Schema(description = "Indicates if the deck has updates from the creator")
-        Boolean hasUpdate
+        Boolean hasUpdate,
+
+        @Schema(description = "Indicates if the original deck is still public and not deleted")
+        Boolean isOriginalDeckActive
 ) { }

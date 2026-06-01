@@ -115,10 +115,16 @@ public class SavedDeckService {
         int reviewCards = userCardProgressRepository.countCardsByStatus(userId, deckId, UserCardProgress.CardStatus.REVIEW);
         int dueCards = userCardProgressRepository.countDueCards(userId, deckId);
 
-        int newCardsOutOfSync = userCardProgressRepository.countNewCards(userId, deckId);
-        int updatedCardsOutOfSync = userCardProgressRepository.countUpdatedCards(userId, deckId);
-        int deletedCardsOutOfSync = userCardProgressRepository.countDeletedCards(userId, deckId);
-        boolean hasUpdate = (newCardsOutOfSync > 0) || (updatedCardsOutOfSync > 0) || (deletedCardsOutOfSync > 0);
+        boolean isOriginalDeckActive = originalDeck.getVisibility() == Deck.DeckVisibility.PUBLIC 
+                                       && !originalDeck.getIsDeleted();
+
+        boolean hasUpdate = false;
+        if (isOriginalDeckActive) {
+            int newCardsOutOfSync = userCardProgressRepository.countNewCards(userId, deckId);
+            int updatedCardsOutOfSync = userCardProgressRepository.countUpdatedCards(userId, deckId);
+            int deletedCardsOutOfSync = userCardProgressRepository.countDeletedCards(userId, deckId);
+            hasUpdate = (newCardsOutOfSync > 0) || (updatedCardsOutOfSync > 0) || (deletedCardsOutOfSync > 0);
+        }
 
         return SavedDeckResponse.builder()
                 .id(savedDeck.getId())
@@ -134,6 +140,7 @@ public class SavedDeckService {
                 .reviewCards(reviewCards)
                 .dueCards(dueCards)
                 .hasUpdate(hasUpdate)
+                .isOriginalDeckActive(isOriginalDeckActive)
                 .build();
 
     }

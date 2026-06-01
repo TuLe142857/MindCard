@@ -1,25 +1,35 @@
 package vn.edu.ptithcm.mindcard.service;
 
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.context.ApplicationContextException;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import vn.edu.ptithcm.mindcard.dto.request.deck.DeckCreateRequest;
-import vn.edu.ptithcm.mindcard.dto.request.deck.DeckUpdateRequest;
-import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
-import vn.edu.ptithcm.mindcard.entity.*;
-import vn.edu.ptithcm.mindcard.exception.AppException;
-import vn.edu.ptithcm.mindcard.exception.ErrorCode;
-import vn.edu.ptithcm.mindcard.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
-import java.util.Optional;
+import jakarta.persistence.EntityNotFoundException;
+import vn.edu.ptithcm.mindcard.dto.request.deck.DeckCreateRequest;
+import vn.edu.ptithcm.mindcard.dto.request.deck.DeckUpdateRequest;
+import vn.edu.ptithcm.mindcard.dto.request.deck.UpdateDeckVisibilityRequest;
+import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
+import vn.edu.ptithcm.mindcard.entity.Deck;
+import vn.edu.ptithcm.mindcard.entity.DeckRating;
+import vn.edu.ptithcm.mindcard.entity.SavedDeck;
+import vn.edu.ptithcm.mindcard.entity.User;
+import vn.edu.ptithcm.mindcard.entity.UserCardProgress;
+import vn.edu.ptithcm.mindcard.exception.AppException;
+import vn.edu.ptithcm.mindcard.exception.ErrorCode;
+import vn.edu.ptithcm.mindcard.repository.DeckRatingRepository;
+import vn.edu.ptithcm.mindcard.repository.DeckRepository;
+import vn.edu.ptithcm.mindcard.repository.SavedDeckRepository;
+import vn.edu.ptithcm.mindcard.repository.TopicRepository;
+import vn.edu.ptithcm.mindcard.repository.UserCardProgressRepository;
+import vn.edu.ptithcm.mindcard.repository.UserRepository;
 
 @Service
 public class DeckService {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -38,11 +48,11 @@ public class DeckService {
     @Autowired
     private UserCardProgressRepository userCardProgressRepository;
 
-
     @Transactional
-    public void createDeck(int userId, DeckCreateRequest request) throws AppException{
-        if (deckRepository.findByOwnerIdAndName(userId, request.name()).isPresent())
+    public void createDeck(int userId, DeckCreateRequest request) throws AppException {
+        if (deckRepository.findByOwnerIdAndName(userId, request.name()).isPresent()) {
             throw new AppException(ErrorCode.RESOURCE_ALREADY_EXIST, "Deck name already existed");
+        }
         Deck newDeck = Deck.builder()
                 .name(request.name())
                 .visibility(request.visibility())
@@ -54,23 +64,23 @@ public class DeckService {
 
     /**
      * Check permission and return deck summary info
+     *
      * @param userId viewer id
      * @param deckId deck id
      * @return deck summary
      */
-    public DeckSummaryResponse getDeckSummary(int userId, int deckId){
+    public DeckSummaryResponse getDeckSummary(int userId, int deckId) {
         User user;
         Deck deck;
-        try{
+        try {
             user = userRepository.getReferenceById(userId);
             deck = deckRepository.getReferenceById(deckId);
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
         }
 
         if (deck.getVisibility() == Deck.DeckVisibility.PRIVATE
-                && !Objects.equals(deck.getOwner().getId(), user.getId())
-        ){
+                && !Objects.equals(deck.getOwner().getId(), user.getId())) {
             throw new AppException(ErrorCode.FORBIDDEN, "Deck is private");
         }
 
@@ -89,23 +99,30 @@ public class DeckService {
     }
 
     /**
-     * Save deck and create CardProgress(with status=NEW), update deck.savedCount
+     * Save deck and create CardProgress(with status=NEW), update
+     * deck.savedCount
+     *
      * @param userId user id
      * @param deckId deck id
      */
     @Transactional
-    public void saveDeck(int userId, int deckId) throws AppException{
+    public void saveDeck(int userId, int deckId) throws AppException {
         User user;
         Deck deck;
-        try{
+        try {
             user = userRepository.getReferenceById(userId);
             deck = deckRepository.getReferenceById(deckId);
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, e.getMessage());
         }
 
+        // Check if deck is private and not owned by the user
+        if (deck.getVisibility() == Deck.DeckVisibility.PRIVATE && !deck.getOwner().getId().equals(userId)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Cannot save a private deck");
+        }
+
         // Check if user has already saved this deck
-        if (savedDeckRepository.findByUserIdAndDeckId(userId, deckId).isPresent()){
+        if (savedDeckRepository.findByUserIdAndDeckId(userId, deckId).isPresent()) {
             throw new AppException(ErrorCode.ACTION_ALREADY_PERFORMED, "You have already saved this deck!");
         }
 
@@ -143,31 +160,34 @@ public class DeckService {
 
     /**
      * Add rating to deck and update deck.ratingCount, deck.avgRating
+     *
      * @param userId user id
      * @param deckId deck id
      * @param rating rating in range [1, 5]
      * @throws AppException with the following {@link ErrorCode}
      * <ul>
-     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND}</li> - user or deck not found
-     *     <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED}</li> - user has already rating this deck
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND}</li> - user or deck not found
+     * <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED}</li> - user has already
+     * rating this deck
      * </ul>
-     * @throws IllegalArgumentException when {@code rating} is not in range [1, 5]
+     * @throws IllegalArgumentException when {@code rating} is not in range [1,
+     * 5]
      */
-    public void ratingDeck(int userId, int deckId, int rating) throws AppException, IllegalArgumentException{
+    public void ratingDeck(int userId, int deckId, int rating) throws AppException, IllegalArgumentException {
         User user;
         Deck deck;
-        try{
+        try {
             user = userRepository.getReferenceById(userId);
             deck = deckRepository.getReferenceById(deckId);
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, e.getMessage());
         }
 
-        if (deckRatingRepository.findByDeckIdAndUserId(deckId, userId).isPresent()){
-            throw new AppException(ErrorCode.ACTION_ALREADY_PERFORMED,"You have already rating this deck!");
+        if (deckRatingRepository.findByDeckIdAndUserId(deckId, userId).isPresent()) {
+            throw new AppException(ErrorCode.ACTION_ALREADY_PERFORMED, "You have already rating this deck!");
         }
 
-        if(!(rating >= 1 && rating <= 5)){
+        if (!(rating >= 1 && rating <= 5)) {
             throw new IllegalArgumentException("rating must in [1, 5]");
         }
 
@@ -187,60 +207,87 @@ public class DeckService {
         );
 
         // update avg rating
-
         int ratingCount = deck.getRatingCount();
         double avgRating = deck.getAvgRating();
         deck.setRatingCount(ratingCount + 1);
-        deck.setAvgRating( (avgRating*ratingCount + rating) / (ratingCount + 1));
+        deck.setAvgRating((avgRating * ratingCount + rating) / (ratingCount + 1));
 
         deckRepository.save(deck);
     }
 
-
     /**
      * Update Deck
+     *
      * @param updateRequest update request
      * @throws AppException ...
      */
     @Transactional
-    public void updateDeck(int userId, int deckId, DeckUpdateRequest updateRequest) throws AppException{
+    public void updateDeck(int userId, int deckId, DeckUpdateRequest updateRequest) throws AppException {
         User user;
         Deck deck;
-        try{
+        try {
             user = userRepository.getReferenceById(userId);
             deck = deckRepository.getReferenceById(deckId);
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, e.getMessage());
         }
 
         // check permission
-        if (! deck.getOwner().getId().equals(userId))
+        if (!deck.getOwner().getId().equals(userId)) {
             throw new AppException(ErrorCode.FORBIDDEN, "You're not owner of this deck!");
+        }
 
-        if(updateRequest == null || !updateRequest.hasUpdateField())
+        if (updateRequest == null || !updateRequest.hasUpdateField()) {
             return;
+        }
 
-        if (updateRequest.name() != null && !updateRequest.name().equals(deck.getName())){
-            if (deckRepository.findByOwnerIdAndName(userId, updateRequest.name()).isPresent())
+        if (updateRequest.name() != null && !updateRequest.name().equals(deck.getName())) {
+            if (deckRepository.findByOwnerIdAndName(userId, updateRequest.name()).isPresent()) {
                 throw new AppException(ErrorCode.RESOURCE_ALREADY_EXIST, "Deck name already exist");
+            }
             deck.setName(updateRequest.name());
         }
 
-        if (updateRequest.description() != null){
+        if (updateRequest.description() != null) {
             deck.setDescription(updateRequest.description());
         }
 
-        if (
-                updateRequest.topicId() != null
-                && !deck.getTopic().getId().equals(updateRequest.topicId())
-        ){
-            try{
+        if (updateRequest.topicId() != null
+                && !deck.getTopic().getId().equals(updateRequest.topicId())) {
+            try {
                 deck.setTopic(topicRepository.getReferenceById(updateRequest.topicId()));
-            }catch (EntityNotFoundException e){
+            } catch (EntityNotFoundException e) {
                 throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Topic not found");
             }
         }
 
+        deckRepository.save(deck);
+    }
+
+    /**
+     * Updates the visibility of a deck.
+     *
+     * @param userId the ID of the requesting user.
+     * @param deckId the ID of the deck to update.
+     * @param request the request containing the new visibility.
+     * @throws AppException if validation fails, specifically:
+     * <ul>
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck does not
+     * exist.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the deck does not belong to the
+     * user.</li>
+     * </ul>
+     */
+    @Transactional
+    public void updateDeckVisibility(int userId, int deckId, UpdateDeckVisibilityRequest request) throws AppException {
+        Deck deck = deckRepository.findById(deckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Deck not found"));
+
+        if (!deck.getOwner().getId().equals(userId)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "You do not own this deck");
+        }
+
+        deck.setVisibility(request.visibility());
         deckRepository.save(deck);
     }
 
@@ -252,18 +299,19 @@ public class DeckService {
      * @throws AppException if any validation fails, specifically:
      * <ul>
      * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the
+     * deck.</li>
      * </ul>
      */
     @Transactional
     public void deleteDeck(int userId, int deckId) throws AppException {
         Deck deck = deckRepository.findById(deckId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Deck not found"));
-        
+
         if (!deck.getOwner().getId().equals(userId)) {
             throw new AppException(ErrorCode.FORBIDDEN, "You are not owner of this deck");
         }
-        
+
         deck.setIsDeleted(true);
         deckRepository.save(deck);
     }
@@ -271,7 +319,8 @@ public class DeckService {
     /**
      * Searches for public decks by keyword with pagination.
      *
-     * @param keyword the search keyword matching name, description, or topic name
+     * @param keyword the search keyword matching name, description, or topic
+     * name
      * @param pageable pagination and sorting information
      * @return a page of public decks mapped to {@link DeckSummaryResponse} DTOs
      */
@@ -291,17 +340,19 @@ public class DeckService {
     }
 
     /**
-     * Retrieves all decks (both {@code PUBLIC} and {@code PRIVATE}) belonging to a specific user.
+     * Retrieves all decks (both {@code PUBLIC} and {@code PRIVATE}) belonging
+     * to a specific user.
      *
      * @param userId the ID of the deck owner
      * @param pageable pagination and sorting information
      * @return a page of decks mapped to {@link DeckSummaryResponse} DTOs
      * @throws AppException with the following {@link ErrorCode}:
      * <ul>
-     *     <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with specified userId is not found.</li>
+     * <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with specified userId
+     * is not found.</li>
      * </ul>
      */
-    public Page<DeckSummaryResponse> getUserDecks(int userId, Pageable pageable) throws AppException{
+    public Page<DeckSummaryResponse> getUserDecks(int userId, Pageable pageable) throws AppException {
         userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         Page<Deck> decks = deckRepository.findAllByOwnerId(userId, pageable);
@@ -319,14 +370,16 @@ public class DeckService {
     }
 
     /**
-     * Retrieves only {@code PUBLIC} decks belonging to a user identified by username.
+     * Retrieves only {@code PUBLIC} decks belonging to a user identified by
+     * username.
      *
      * @param username the username of the deck owner
      * @param pageable pagination and sorting information
      * @return a page of public decks mapped to {@link DeckSummaryResponse} DTOs
      * @throws AppException with the following {@link ErrorCode}:
      * <ul>
-     * <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with the specified username is not found.</li>
+     * <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with the specified
+     * username is not found.</li>
      * </ul>
      */
     public Page<DeckSummaryResponse> getPublicDecksByUsername(String username, Pageable pageable) throws AppException {

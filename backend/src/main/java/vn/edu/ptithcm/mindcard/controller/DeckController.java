@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -106,6 +107,22 @@ public class DeckController {
             @PathVariable int deckId
     ) {
         deckService.deleteDeck(userPrincipal.getId(), deckId);
+        return ResponseEntity.ok(APIResponse.success());
+    }
+
+    @PatchMapping("/{deckId}/visibility")
+    @Operation(summary = "Update Deck visibility")
+    @ApiErrors({
+        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Deck not found"),
+        @ApiError(value = ErrorCode.FORBIDDEN, description = "Deck does not belong to the user"),
+        @ApiError(value = ErrorCode.VALIDATION_ERROR, description = "Invalid visibility value")
+    })
+    public ResponseEntity<APIResponse.Success<?>> updateDeckVisibility(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable int deckId,
+            @RequestBody @Valid vn.edu.ptithcm.mindcard.dto.request.deck.UpdateDeckVisibilityRequest request
+    ) {
+        deckService.updateDeckVisibility(userPrincipal.getId(), deckId, request);
         return ResponseEntity.ok(APIResponse.success());
     }
 
