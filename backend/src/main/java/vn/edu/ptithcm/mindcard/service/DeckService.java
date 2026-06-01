@@ -11,6 +11,8 @@ import vn.edu.ptithcm.mindcard.entity.*;
 import vn.edu.ptithcm.mindcard.exception.AppException;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -72,11 +74,15 @@ public class DeckService {
         }
 
         return DeckSummaryResponse.builder()
+                .id(deck.getId())
                 .name(deck.getName())
                 .owner(deck.getOwner().getUsername())
                 .description(deck.getDescription())
                 .topic(deck.getTopic().getName())
                 .totalCard(deck.getCards().size())
+                .savedCount(deck.getSavedCount())
+                .ratingCount(deck.getRatingCount())
+                .avgRating(deck.getAvgRating())
                 .build();
 
     }
@@ -233,6 +239,28 @@ public class DeckService {
         }
 
         deckRepository.save(deck);
+    }
+
+    /**
+     * Searches for public decks by keyword with pagination.
+     *
+     * @param keyword the search keyword matching name, description, or topic name
+     * @param pageable pagination and sorting information
+     * @return a page of public decks mapped to {@link DeckSummaryResponse} DTOs
+     */
+    public Page<DeckSummaryResponse> searchPublicDecks(String keyword, Pageable pageable) {
+        Page<Deck> decks = deckRepository.searchPublicDecks(keyword, pageable);
+        return decks.map(deck -> DeckSummaryResponse.builder()
+                .id(deck.getId())
+                .name(deck.getName())
+                .owner(deck.getOwner().getUsername())
+                .topic(deck.getTopic().getName())
+                .description(deck.getDescription())
+                .totalCard(deck.getCards().size())
+                .savedCount(deck.getSavedCount())
+                .ratingCount(deck.getRatingCount())
+                .avgRating(deck.getAvgRating())
+                .build());
     }
 
 }

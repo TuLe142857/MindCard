@@ -14,6 +14,9 @@ import vn.edu.ptithcm.mindcard.dto.request.deck.DeckRatingRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckUpdateRequest;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import vn.edu.ptithcm.mindcard.service.AuthService;
 import vn.edu.ptithcm.mindcard.service.CardService;
 import vn.edu.ptithcm.mindcard.service.DeckService;
@@ -43,8 +46,14 @@ public class DeckController {
 
     @GetMapping("")
     @Operation(summary = "Search Public Deck")
-    public ResponseEntity<APIResponse.Success<?>> searchDeck(){
-        return ResponseEntity.ok(APIResponse.success());
+    public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> searchDeck(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ){
+        Pageable pageable = PageRequest.of(page - 1, limit);
+        Page<DeckSummaryResponse> decks = deckService.searchPublicDecks(keyword, pageable);
+        return ResponseEntity.ok(APIResponse.paginated(decks));
     }
 
     @GetMapping("/{deckId}")
