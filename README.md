@@ -9,9 +9,10 @@
 
 ```shell
 # run FE and Backend Infrastructure
-docker compose -f docker-compose.yml -f docker-compose-dev.yml up -d --build
+make build-dev
+# docker compose -f docker-compose.yml -f docker-compose-dev.yml up -d --build
 
-# run backend with wrapped mvn of spring boot
+# run backend server with wrapped mvn of spring boot
 cd ./backend
 ./mvnw spring-boot:run
 ```
