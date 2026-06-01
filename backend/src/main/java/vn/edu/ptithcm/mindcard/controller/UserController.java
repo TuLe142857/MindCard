@@ -12,11 +12,16 @@ import vn.edu.ptithcm.mindcard.annotation.ApiError;
 import vn.edu.ptithcm.mindcard.annotation.ApiErrors;
 import vn.edu.ptithcm.mindcard.dto.request.common.SingleImageFileUploadRequest;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
+import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
 import vn.edu.ptithcm.mindcard.dto.response.user.UserPublicProfileResponse;
 import vn.edu.ptithcm.mindcard.dto.response.user.UserPrivateProfileResponse;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 import vn.edu.ptithcm.mindcard.service.UserService;
+import vn.edu.ptithcm.mindcard.service.DeckService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api/users")
@@ -25,6 +30,7 @@ import vn.edu.ptithcm.mindcard.service.UserService;
 public class UserController {
 
     private final UserService userService;
+    private final DeckService deckService;
 
     @GetMapping("/me")
     @Operation(summary = "Get current user's private profile (includes email)")
@@ -53,8 +59,15 @@ public class UserController {
     }
 
     @GetMapping("/me/decks")
-    public ResponseEntity<APIResponse.Success<?>> getSelfDecks() {
-        return ResponseEntity.ok(APIResponse.success());
+    @Operation(summary = "Get current user's decks (both public and private)")
+    public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> getSelfDecks(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, limit);
+        Page<DeckSummaryResponse> response = deckService.getUserDecks(userPrincipal.getId(), pageable);
+        return ResponseEntity.ok(APIResponse.paginated(response));
     }
 
     @GetMapping("/me/saved-decks")
@@ -73,7 +86,15 @@ public class UserController {
     }
 
     @GetMapping("/{username}/decks")
-    public ResponseEntity<APIResponse.Success<?>> getUserDecks(){
-        return ResponseEntity.ok(APIResponse.success());
+    @Operation(summary = "Get a user's public decks by username")
+    @ApiError(value = ErrorCode.USER_NOT_FOUND, description = "User not found")
+    public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> getUserDecks(
+            @PathVariable String username,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, limit);
+        Page<DeckSummaryResponse> response = deckService.getPublicDecksByUsername(username, pageable);
+        return ResponseEntity.ok(APIResponse.paginated(response));
     }
 }

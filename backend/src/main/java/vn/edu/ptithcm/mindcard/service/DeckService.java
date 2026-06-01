@@ -1,6 +1,7 @@
 package vn.edu.ptithcm.mindcard.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -250,6 +251,62 @@ public class DeckService {
      */
     public Page<DeckSummaryResponse> searchPublicDecks(String keyword, Pageable pageable) {
         Page<Deck> decks = deckRepository.searchPublicDecks(keyword, pageable);
+        return decks.map(deck -> DeckSummaryResponse.builder()
+                .id(deck.getId())
+                .name(deck.getName())
+                .owner(deck.getOwner().getUsername())
+                .topic(deck.getTopic().getName())
+                .description(deck.getDescription())
+                .totalCard(deck.getCards().size())
+                .savedCount(deck.getSavedCount())
+                .ratingCount(deck.getRatingCount())
+                .avgRating(deck.getAvgRating())
+                .build());
+    }
+
+    /**
+     * Retrieves all decks (both {@code PUBLIC} and {@code PRIVATE}) belonging to a specific user.
+     *
+     * @param userId the ID of the deck owner
+     * @param pageable pagination and sorting information
+     * @return a page of decks mapped to {@link DeckSummaryResponse} DTOs
+     * @throws AppException with the following {@link ErrorCode}:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with specified userId is not found.</li>
+     * </ul>
+     */
+    public Page<DeckSummaryResponse> getUserDecks(int userId, Pageable pageable) throws AppException{
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Page<Deck> decks = deckRepository.findAllByOwnerId(userId, pageable);
+        return decks.map(deck -> DeckSummaryResponse.builder()
+                .id(deck.getId())
+                .name(deck.getName())
+                .owner(deck.getOwner().getUsername())
+                .topic(deck.getTopic().getName())
+                .description(deck.getDescription())
+                .totalCard(deck.getCards().size())
+                .savedCount(deck.getSavedCount())
+                .ratingCount(deck.getRatingCount())
+                .avgRating(deck.getAvgRating())
+                .build());
+    }
+
+    /**
+     * Retrieves only {@code PUBLIC} decks belonging to a user identified by username.
+     *
+     * @param username the username of the deck owner
+     * @param pageable pagination and sorting information
+     * @return a page of public decks mapped to {@link DeckSummaryResponse} DTOs
+     * @throws AppException with the following {@link ErrorCode}:
+     * <ul>
+     * <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with the specified username is not found.</li>
+     * </ul>
+     */
+    public Page<DeckSummaryResponse> getPublicDecksByUsername(String username, Pageable pageable) throws AppException {
+        userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Page<Deck> decks = deckRepository.findPublicByOwnerUsername(username, pageable);
         return decks.map(deck -> DeckSummaryResponse.builder()
                 .id(deck.getId())
                 .name(deck.getName())

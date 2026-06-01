@@ -27,4 +27,19 @@ public interface DeckRepository extends JpaRepository<Deck, Integer> {
                OR LOWER(d.topic.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
     """)
     Page<Deck> searchPublicDecks(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("""
+        SELECT d FROM Deck d
+        WHERE d.owner.id = :ownerId
+          AND d.isDeleted = false
+    """)
+    Page<Deck> findAllByOwnerId(@Param("ownerId") int ownerId, Pageable pageable);
+
+    @Query("""
+        SELECT d FROM Deck d
+        WHERE d.owner.username = :username
+          AND d.visibility = 'PUBLIC'
+          AND d.isDeleted = false
+    """)
+    Page<Deck> findPublicByOwnerUsername(@Param("username") String username, Pageable pageable);
 }
