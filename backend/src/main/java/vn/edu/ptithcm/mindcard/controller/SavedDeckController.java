@@ -25,6 +25,7 @@ import vn.edu.ptithcm.mindcard.dto.response.card.CardDiffResponse;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardResponse;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSynSummaryResponse;
+import vn.edu.ptithcm.mindcard.dto.response.deck.SavedDeckResponse;
 import vn.edu.ptithcm.mindcard.exception.AppException;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
@@ -44,11 +45,16 @@ public class SavedDeckController {
 
     @GetMapping("/{savedDeckId}")
     @Operation(summary = "Get Saved Deck Summary")
-    public ResponseEntity<APIResponse.Success<?>> getSavedDeckSummary(
+    @ApiErrors({
+        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
+        @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the user")
+    })
+    public ResponseEntity<APIResponse.Success<SavedDeckResponse>> getSavedDeckSummary(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int savedDeckId
     ) {
-        return ResponseEntity.ok(APIResponse.success());
+        SavedDeckResponse response = savedDeckService.getSavedDeckSummary(userPrincipal.getId(), savedDeckId);
+        return ResponseEntity.ok(APIResponse.success(response));
     }
 
     @GetMapping("/{savedDeckId}/sync-summary")

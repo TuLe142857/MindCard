@@ -74,4 +74,31 @@ public interface UserCardProgressRepository extends JpaRepository<UserCardProgre
       AND cp.card.isDeleted = true
     """)
     int countDeletedCards(int userId, int deckId);
+
+    @Query("""
+    SELECT COUNT(cp) FROM UserCardProgress cp
+    WHERE cp.user.id = :userId
+      AND cp.card.deck.id = :deckId
+      AND cp.status = :status
+      AND cp.card.isDeleted = false
+    """)
+    int countCardsByStatus(int userId, int deckId, UserCardProgress.CardStatus status);
+
+    @Query("""
+    SELECT COUNT(cp) FROM UserCardProgress cp
+    WHERE cp.user.id = :userId
+      AND cp.card.deck.id = :deckId
+      AND cp.card.isDeleted = false
+    """)
+    int countTotalCards(int userId, int deckId);
+
+    @Query("""
+    SELECT COUNT(cp) FROM UserCardProgress cp
+    WHERE cp.user.id = :userId
+      AND cp.card.deck.id = :deckId
+      AND cp.status != 'NEW'
+      AND cp.nextReviewDate <= CURRENT_DATE
+      AND cp.card.isDeleted = false
+    """)
+    int countDueCards(int userId, int deckId);
 }

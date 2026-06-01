@@ -37,16 +37,61 @@ public class SavedDeckService {
     private StorageService storageService;
 
     public Page<SavedDeckResponse> listSavedDecks(int userId, Pageable pageable) {
-        return savedDeckRepository.findByUserId(userId, pageable).map(
-                savedDeck -> SavedDeckResponse.builder()
-                        .id(savedDeck.getId())
-                        .saveFrom(savedDeck.getDeck().getId())
-                        .name(savedDeck.getDeck().getName())
-                        .creator(savedDeck.getDeck().getOwner().getUsername())
-                        .topic(savedDeck.getDeck().getTopic().getName())
-                        .description(savedDeck.getDeck().getDescription())
-                        .build()
-        );
+        return savedDeckRepository.findByUserId(userId, pageable)
+                .map(savedDeck -> mapToSavedDeckResponse(savedDeck, userId));
+    }
+
+    /**
+     * Retrieves the summary of a specific saved deck including study progress.
+     *
+     * @param userId the ID of the requesting user.
+     * @param savedDeckId the ID of the saved deck.
+     * @return a {@link SavedDeckResponse} containing summary and progress stats.
+     * @throws AppException if any validation fails, specifically:
+     * <ul>
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck does not exist.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the saved deck does not belong to the user.</li>
+     * </ul>
+     */
+    public SavedDeckResponse getSavedDeckSummary(int userId, int savedDeckId) throws AppException {
+        SavedDeck savedDeck = savedDeckRepository.findById(savedDeckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Saved deck not found"));
+
+        if (!savedDeck.getUser().getId().equals(userId)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "You do not own this saved deck");
+        }
+
+        return mapToSavedDeckResponse(savedDeck, userId);
+    }
+
+    private SavedDeckResponse mapToSavedDeckResponse(SavedDeck savedDeck, int userId) {
+        int deckId = savedDeck.getDeck().getId();
+        int totalCards = userCardProgressRepository.countTotalCards(userId, deckId);
+        int newCards = userCardProgressRepository.countCardsByStatus(userId, deckId, UserCardProgress.CardStatus.NEW);
+        int learningCards = userCardProgressRepository.countCardsByStatus(userId, deckId, UserCardProgress.CardStatus.LEARNING);
+        int reviewCards = userCardProgressRepository.countCardsByStatus(userId, deckId, UserCardProgress.CardStatus.REVIEW);
+        int dueCards = userCardProgressRepository.countDueCards(userId, deckId);
+
+        int newCardsOutOfSync = userCardProgressRepository.countNewCards(userId, deckId);
+        int updatedCardsOutOfSync = userCardProgressRepository.countUpdatedCards(userId, deckId);
+        int deletedCardsOutOfSync = userCardProgressRepository.countDeletedCards(userId, deckId);
+        boolean hasUpdate = (newCardsOutOfSync > 0) || (updatedCardsOutOfSync > 0) || (deletedCardsOutOfSync > 0);
+
+        return SavedDeckResponse.builder()
+                .id(savedDeck.getId())
+                .saveFrom(deckId)
+                .name(savedDeck.getDeck().getName())
+                .creator(savedDeck.getDeck().getOwner().getUsername())
+                .topic(savedDeck.getDeck().getTopic().getName())
+                .description(savedDeck.getDeck().getDescription())
+                .totalCards(totalCards)
+                .newCards(newCards)
+                .learningCards(learningCards)
+                .reviewCards(reviewCards)
+                .dueCards(dueCards)
+                .hasUpdate(hasUpdate)
+                .build();
+
     }
 
     /**

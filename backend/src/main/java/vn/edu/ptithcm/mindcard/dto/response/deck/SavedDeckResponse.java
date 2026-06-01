@@ -21,5 +21,23 @@ public record SavedDeckResponse(
         String topic,
 
         @Schema(description = "Description of the deck", nullable = true)
-        String description
+        String description,
+
+        @Schema(description = "Total number of cards in the deck", nullable = true)
+        Integer totalCards,
+        
+        @Schema(description = "Number of cards in NEW status", nullable = true)
+        Integer newCards,
+        
+        @Schema(description = "Number of cards in LEARNING status", nullable = true)
+        Integer learningCards,
+        
+        @Schema(description = "Number of cards in REVIEW status", nullable = true)
+        Integer reviewCards,
+
+        @Schema(description = "Number of due cards (nextReviewDate <= now)", nullable = true)
+        Integer dueCards,
+
+        @Schema(description = "Indicates if the deck has updates from the creator")
+        Boolean hasUpdate
 ) { }
