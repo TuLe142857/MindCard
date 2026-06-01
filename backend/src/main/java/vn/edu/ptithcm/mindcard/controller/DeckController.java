@@ -88,6 +88,15 @@ public class DeckController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
+    @DeleteMapping("/{deckId}")
+    @Operation(summary = "Delete deck - Coming soon")
+    public ResponseEntity<APIResponse.Success<?>> deleteDeck(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable int deckId
+            ){
+        return ResponseEntity.ok(APIResponse.success());
+    }
+
     @GetMapping("/{deckId}/cards")
     @Operation(
             summary = "Get cards in deck",
