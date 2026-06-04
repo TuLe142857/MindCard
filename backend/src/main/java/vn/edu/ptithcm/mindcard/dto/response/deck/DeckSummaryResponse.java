@@ -1,6 +1,9 @@
 package vn.edu.ptithcm.mindcard.dto.response.deck;
 
+import java.time.Instant;
+
 import lombok.Builder;
+import vn.edu.ptithcm.mindcard.entity.Deck;
 
 @Builder
 public record DeckSummaryResponse(
@@ -8,10 +11,13 @@ public record DeckSummaryResponse(
         String name,
         String owner,
         String topic,
+        Deck.DeckVisibility visibility,
         String description,
         int totalCard,
         int savedCount,
         int ratingCount,
-        double avgRating
-)
-{ }
+        double avgRating,
+        Instant createdAt
+        ) {
+
+}

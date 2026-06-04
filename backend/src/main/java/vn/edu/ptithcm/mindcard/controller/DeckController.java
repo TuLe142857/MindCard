@@ -27,6 +27,7 @@ import vn.edu.ptithcm.mindcard.dto.request.card.CardCreateBatchRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckCreateRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckRatingRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckUpdateRequest;
+import vn.edu.ptithcm.mindcard.dto.request.deck.PublicDeckQueryRequest;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardResponse;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
@@ -63,12 +64,9 @@ public class DeckController {
     @GetMapping("")
     @Operation(summary = "Search Public Deck")
     public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> searchDeck(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit
+            @Valid @ModelAttribute PublicDeckQueryRequest query
     ) {
-        Pageable pageable = PageRequest.of(page - 1, limit);
-        Page<DeckSummaryResponse> decks = deckService.searchPublicDecks(keyword, pageable);
+        Page<DeckSummaryResponse> decks = deckService.searchPublicDecks(query);
         return ResponseEntity.ok(APIResponse.paginated(decks));
     }
 

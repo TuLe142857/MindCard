@@ -4,13 +4,15 @@ import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckCreateRequest;
+import vn.edu.ptithcm.mindcard.dto.request.deck.DeckQueryRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckUpdateRequest;
+import vn.edu.ptithcm.mindcard.dto.request.deck.PublicDeckQueryRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.UpdateDeckVisibilityRequest;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
 import vn.edu.ptithcm.mindcard.entity.Deck;
@@ -26,6 +28,7 @@ import vn.edu.ptithcm.mindcard.repository.SavedDeckRepository;
 import vn.edu.ptithcm.mindcard.repository.TopicRepository;
 import vn.edu.ptithcm.mindcard.repository.UserCardProgressRepository;
 import vn.edu.ptithcm.mindcard.repository.UserRepository;
+import vn.edu.ptithcm.mindcard.repository.specification.DeckSpecification;
 
 @Service
 public class DeckService {
@@ -90,10 +93,12 @@ public class DeckService {
                 .owner(deck.getOwner().getUsername())
                 .description(deck.getDescription())
                 .topic(deck.getTopic().getName())
+                .visibility(deck.getVisibility())
                 .totalCard(deck.getCards().size())
                 .savedCount(deck.getSavedCount())
                 .ratingCount(deck.getRatingCount())
                 .avgRating(deck.getAvgRating())
+                .createdAt(deck.getCreatedAt())
                 .build();
 
     }
@@ -223,14 +228,12 @@ public class DeckService {
      */
     @Transactional
     public void updateDeck(int userId, int deckId, DeckUpdateRequest updateRequest) throws AppException {
-        User user;
-        Deck deck;
-        try {
-            user = userRepository.getReferenceById(userId);
-            deck = deckRepository.getReferenceById(deckId);
-        } catch (EntityNotFoundException e) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, e.getMessage());
-        }
+        userRepository.findById(userId).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_FOUND)
+        );
+        Deck deck = deckRepository.findById(deckId).orElseThrow(
+                () -> new AppException(ErrorCode.RESOURCE_NOT_FOUND)
+        );
 
         // check permission
         if (!deck.getOwner().getId().equals(userId)) {
@@ -317,25 +320,31 @@ public class DeckService {
     }
 
     /**
-     * Searches for public decks by keyword with pagination.
+     * Searches for public decks using specification filters and pagination.
      *
-     * @param keyword the search keyword matching name, description, or topic
-     * name
-     * @param pageable pagination and sorting information
+     * @param queryRequest the query filters including keyword, topicId, and
+     * sorting
      * @return a page of public decks mapped to {@link DeckSummaryResponse} DTOs
      */
-    public Page<DeckSummaryResponse> searchPublicDecks(String keyword, Pageable pageable) {
-        Page<Deck> decks = deckRepository.searchPublicDecks(keyword, pageable);
+    public Page<DeckSummaryResponse> searchPublicDecks(PublicDeckQueryRequest queryRequest) {
+        Specification<Deck> spec = Specification.where(DeckSpecification.isDeleted(false))
+                .and(DeckSpecification.hasVisibility(Deck.DeckVisibility.PUBLIC))
+                .and(DeckSpecification.hasKeyword(queryRequest.keyword()))
+                .and(DeckSpecification.hasTopicId(queryRequest.topicId()));
+
+        Page<Deck> decks = deckRepository.findAll(spec, queryRequest.toPageable());
         return decks.map(deck -> DeckSummaryResponse.builder()
                 .id(deck.getId())
                 .name(deck.getName())
                 .owner(deck.getOwner().getUsername())
                 .topic(deck.getTopic().getName())
+                .visibility(deck.getVisibility())
                 .description(deck.getDescription())
                 .totalCard(deck.getCards().size())
                 .savedCount(deck.getSavedCount())
                 .ratingCount(deck.getRatingCount())
                 .avgRating(deck.getAvgRating())
+                .createdAt(deck.getCreatedAt())
                 .build());
     }
 
@@ -344,7 +353,7 @@ public class DeckService {
      * to a specific user.
      *
      * @param userId the ID of the deck owner
-     * @param pageable pagination and sorting information
+     * @param query pageable and query
      * @return a page of decks mapped to {@link DeckSummaryResponse} DTOs
      * @throws AppException with the following {@link ErrorCode}:
      * <ul>
@@ -352,20 +361,26 @@ public class DeckService {
      * is not found.</li>
      * </ul>
      */
-    public Page<DeckSummaryResponse> getUserDecks(int userId, Pageable pageable) throws AppException {
+    public Page<DeckSummaryResponse> getUserDecks(int userId, DeckQueryRequest query) throws AppException {
+        Specification<Deck> spec = Specification.where(DeckSpecification.isDeleted(false))
+                .and(DeckSpecification.hasKeyword(query.keyword()))
+                .and(DeckSpecification.hasTopicId(query.topicId()))
+                .and(DeckSpecification.hasVisibility(query.visibility()));
         userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        Page<Deck> decks = deckRepository.findAllByOwnerId(userId, pageable);
+        Page<Deck> decks = deckRepository.findAll(spec, query.toPageable());
         return decks.map(deck -> DeckSummaryResponse.builder()
                 .id(deck.getId())
                 .name(deck.getName())
                 .owner(deck.getOwner().getUsername())
                 .topic(deck.getTopic().getName())
+                .visibility(deck.getVisibility())
                 .description(deck.getDescription())
                 .totalCard(deck.getCards().size())
                 .savedCount(deck.getSavedCount())
                 .ratingCount(deck.getRatingCount())
                 .avgRating(deck.getAvgRating())
+                .createdAt(deck.getCreatedAt())
                 .build());
     }
 
@@ -374,7 +389,7 @@ public class DeckService {
      * username.
      *
      * @param username the username of the deck owner
-     * @param pageable pagination and sorting information
+     * @param query pagination query
      * @return a page of public decks mapped to {@link DeckSummaryResponse} DTOs
      * @throws AppException with the following {@link ErrorCode}:
      * <ul>
@@ -382,20 +397,27 @@ public class DeckService {
      * username is not found.</li>
      * </ul>
      */
-    public Page<DeckSummaryResponse> getPublicDecksByUsername(String username, Pageable pageable) throws AppException {
+    public Page<DeckSummaryResponse> getPublicDecksByUsername(String username, PublicDeckQueryRequest query) throws AppException {
         userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        Page<Deck> decks = deckRepository.findPublicByOwnerUsername(username, pageable);
+
+        Specification<Deck> spec = Specification.where(DeckSpecification.isDeleted(false))
+                .and(DeckSpecification.hasVisibility(Deck.DeckVisibility.PUBLIC))
+                .and(DeckSpecification.hasKeyword(query.keyword()))
+                .and(DeckSpecification.hasTopicId(query.topicId()));
+        Page<Deck> decks = deckRepository.findAll(spec, query.toPageable());
         return decks.map(deck -> DeckSummaryResponse.builder()
                 .id(deck.getId())
                 .name(deck.getName())
                 .owner(deck.getOwner().getUsername())
                 .topic(deck.getTopic().getName())
+                .visibility(deck.getVisibility())
                 .description(deck.getDescription())
                 .totalCard(deck.getCards().size())
                 .savedCount(deck.getSavedCount())
                 .ratingCount(deck.getRatingCount())
                 .avgRating(deck.getAvgRating())
+                .createdAt(deck.getCreatedAt())
                 .build());
     }
 
