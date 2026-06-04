@@ -37,7 +37,7 @@ public class S3Config {
         return S3Presigner.builder()
                 .credentialsProvider(credentialsProvider)
                 .region(Region.of(s3Properties.region()))
-                .endpointOverride(URI.create(s3Properties.endpoint()))
+                .endpointOverride(URI.create(s3Properties.publicUrlOverride()))
                 .serviceConfiguration(
                         S3Configuration.builder()
                                 .pathStyleAccessEnabled(true)
