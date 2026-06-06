@@ -1,6 +1,5 @@
 package vn.edu.ptithcm.mindcard.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -15,17 +14,16 @@ import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 
 import java.io.InputStream;
 import java.time.Duration;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class StorageService {
-    @Autowired
-    private S3Client s3Client;
+    private final S3Client s3Client;
 
-    @Autowired
-    private S3Presigner s3Presigner;
+    private final S3Presigner s3Presigner;
 
-    @Autowired
-    private S3Properties s3Properties;
+    private final S3Properties s3Properties;
 
     public void uploadFile(String key, InputStream inputStream, String contentType, long contentLength)
         throws AppException

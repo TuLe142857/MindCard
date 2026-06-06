@@ -1,6 +1,5 @@
 package vn.edu.ptithcm.mindcard.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,17 +26,17 @@ import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 import vn.edu.ptithcm.mindcard.service.CardService;
 import vn.edu.ptithcm.mindcard.service.StudyService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/cards")
 @Tag(name = "Card")
+@RequiredArgsConstructor
 public class CardController {
 
-    @Autowired
-    private StudyService studyService;
+    private final StudyService studyService;
 
-    @Autowired
-    private CardService cardService;
+    private final CardService cardService;
 
     @DeleteMapping("/{cardId}")
     @Operation(summary = "Delete card", description = "Soft deletes a card owned by the user.")

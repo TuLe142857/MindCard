@@ -5,7 +5,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import vn.edu.ptithcm.mindcard.config.properties.JWTProperties;
 import vn.edu.ptithcm.mindcard.exception.AppException;
@@ -15,8 +14,10 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class JwtService {
     @Getter
     public enum TokenType{
@@ -24,16 +25,14 @@ public class JwtService {
         REFRESH_TOKEN("refresh");
 
         private final String type;
-        private TokenType(String type){
+        TokenType(String type){
             this.type = type;
         }
     }
 
-    @Autowired
-    JWTProperties jwtProperties;
+    private final JWTProperties jwtProperties;
 
-    @Autowired
-    JwtBlacklistService blacklistService;
+    private final JwtBlacklistService blacklistService;
 
     private SecretKey getKey() {
         return Keys.hmacShaKeyFor(jwtProperties.secretKey().getBytes());
@@ -134,4 +133,4 @@ public class JwtService {
 
         return null;
     }
-};
+}

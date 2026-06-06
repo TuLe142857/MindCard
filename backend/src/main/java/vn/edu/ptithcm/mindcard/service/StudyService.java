@@ -1,7 +1,6 @@
 package vn.edu.ptithcm.mindcard.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,26 +21,22 @@ import vn.edu.ptithcm.mindcard.service.algorithm.SpaceRepetitionAlgorithm;
 
 import java.time.Duration;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class StudyService {
-    @Autowired
-    private UserCardProgressRepository userCardProgressRepository;
+    private final UserCardProgressRepository userCardProgressRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private CardRepository cardRepository;
+    private final CardRepository cardRepository;
 
-    @Autowired
-    private StorageService storageService;
+    private final StorageService storageService;
 
-    @Autowired
-    private SavedDeckRepository savedDeckRepository;
+    private final SavedDeckRepository savedDeckRepository;
 
-    @Autowired
-    private SpaceRepetitionAlgorithm spaceRepetitionAlgorithm;
+    private final SpaceRepetitionAlgorithm spaceRepetitionAlgorithm;
 
      private CardContentResponse mapCardContent(CardContent content){
          var builder = CardContentResponse.builder();

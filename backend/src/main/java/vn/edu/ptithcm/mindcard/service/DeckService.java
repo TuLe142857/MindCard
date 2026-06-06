@@ -2,7 +2,6 @@ package vn.edu.ptithcm.mindcard.service;
 
 import java.util.Objects;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -29,27 +28,23 @@ import vn.edu.ptithcm.mindcard.repository.TopicRepository;
 import vn.edu.ptithcm.mindcard.repository.UserCardProgressRepository;
 import vn.edu.ptithcm.mindcard.repository.UserRepository;
 import vn.edu.ptithcm.mindcard.repository.specification.DeckSpecification;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class DeckService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private DeckRepository deckRepository;
+    private final DeckRepository deckRepository;
 
-    @Autowired
-    private SavedDeckRepository savedDeckRepository;
+    private final SavedDeckRepository savedDeckRepository;
 
-    @Autowired
-    private DeckRatingRepository deckRatingRepository;
+    private final DeckRatingRepository deckRatingRepository;
 
-    @Autowired
-    private TopicRepository topicRepository;
+    private final TopicRepository topicRepository;
 
-    @Autowired
-    private UserCardProgressRepository userCardProgressRepository;
+    private final UserCardProgressRepository userCardProgressRepository;
 
     @Transactional
     public void createDeck(int userId, DeckCreateRequest request) throws AppException {

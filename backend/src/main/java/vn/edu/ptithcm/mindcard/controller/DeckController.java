@@ -1,6 +1,5 @@
 package vn.edu.ptithcm.mindcard.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,17 +34,17 @@ import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 import vn.edu.ptithcm.mindcard.service.CardService;
 import vn.edu.ptithcm.mindcard.service.DeckService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/decks")
 @Tag(name = "Deck")
+@RequiredArgsConstructor
 public class DeckController {
 
-    @Autowired
-    private DeckService deckService;
+    private final DeckService deckService;
 
-    @Autowired
-    private CardService cardService;
+    private final CardService cardService;
 
     @PostMapping("")
     @Operation(summary = "Create deck")

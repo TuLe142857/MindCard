@@ -2,7 +2,6 @@ package vn.edu.ptithcm.mindcard.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,17 +32,17 @@ import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 import vn.edu.ptithcm.mindcard.service.SavedDeckService;
 import vn.edu.ptithcm.mindcard.service.StudyService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/saved-decks")
 @Tag(name = "Saved Deck")
+@RequiredArgsConstructor
 public class SavedDeckController {
 
-    @Autowired
-    private SavedDeckService savedDeckService;
+    private final SavedDeckService savedDeckService;
 
-    @Autowired
-    private StudyService studyService;
+    private final StudyService studyService;
 
     @GetMapping("/{savedDeckId}")
     @Operation(summary = "Get Saved Deck Summary")

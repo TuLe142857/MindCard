@@ -2,7 +2,6 @@ package vn.edu.ptithcm.mindcard.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -25,21 +24,19 @@ import vn.edu.ptithcm.mindcard.repository.SavedDeckRepository;
 import vn.edu.ptithcm.mindcard.repository.UserCardProgressRepository;
 import vn.edu.ptithcm.mindcard.repository.projection.CardSyncProjection;
 import vn.edu.ptithcm.mindcard.repository.specification.SavedDeckSpecification;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class SavedDeckService {
 
-    @Autowired
-    private SavedDeckRepository savedDeckRepository;
+    private final SavedDeckRepository savedDeckRepository;
 
-    @Autowired
-    private CardRepository cardRepository;
+    private final CardRepository cardRepository;
 
-    @Autowired
-    private UserCardProgressRepository userCardProgressRepository;
+    private final UserCardProgressRepository userCardProgressRepository;
 
-    @Autowired
-    private StorageService storageService;
+    private final StorageService storageService;
 
     public Page<SavedDeckResponse> listSavedDecks(int userId, SavedDeckQueryRequest query) {
         Specification<SavedDeck> spec = Specification.where(SavedDeckSpecification.hasKeyword(query.keyword()));

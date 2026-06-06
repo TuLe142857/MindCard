@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,24 +26,21 @@ import vn.edu.ptithcm.mindcard.repository.CardRepository;
 import vn.edu.ptithcm.mindcard.repository.CardVersionRepository;
 import vn.edu.ptithcm.mindcard.repository.DeckRepository;
 import vn.edu.ptithcm.mindcard.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CardService {
 
-    @Autowired
-    private CardRepository cardRepository;
+    private final CardRepository cardRepository;
 
-    @Autowired
-    private CardVersionRepository cardVersionRepository;
+    private final CardVersionRepository cardVersionRepository;
 
-    @Autowired
-    private DeckRepository deckRepository;
+    private final DeckRepository deckRepository;
 
-    @Autowired
-    private StorageService storageService;
+    private final StorageService storageService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     /**
      * Retrieves a paginated list of cards for a specific deck.

@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -22,20 +21,19 @@ import vn.edu.ptithcm.mindcard.exception.AppException;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.JwtService;
 import vn.edu.ptithcm.mindcard.service.AuthService;
+import lombok.RequiredArgsConstructor;
 
 
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Auth")
+@RequiredArgsConstructor
 public class AuthController {
-    @Autowired
-    AuthService authService;
+    private final AuthService authService;
 
-    @Autowired
-    JwtService jwtService;
+    private final JwtService jwtService;
 
-    @Autowired
-    JWTProperties jwtProperties;
+    private final JWTProperties jwtProperties;
 
     @PostMapping("/register/request")
     @Operation(summary = "Step 1/2 of registration")
