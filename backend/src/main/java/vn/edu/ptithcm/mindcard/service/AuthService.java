@@ -3,7 +3,6 @@ package vn.edu.ptithcm.mindcard.service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -128,14 +127,14 @@ public class AuthService {
      * </ul>
      */
     public LoginResponse login(LoginRequest request) throws AppException {
-        Optional<User> user = userRepository.findByEmailOrUsername(request.identity());
-        if (user.isEmpty()
-                || (!passwordEncoder.matches(request.password(), user.get().getPasswordHash()))) {
+        User user = userRepository.findByEmailOrUsername(request.identity())
+                .orElseThrow(() -> new AppException(ErrorCode.LOGIN_FAILED, "Identity or password mismatch"));
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new AppException(ErrorCode.LOGIN_FAILED, "Identity or password mismatch");
         }
 
-        String accessToken = generateAccessToken(user.get());
-        String refreshToken = generateRefreshToken(user.get());
+        String accessToken = generateAccessToken(user);
+        String refreshToken = generateRefreshToken(user);
 
         return new LoginResponse(accessToken, refreshToken);
     }
@@ -173,12 +172,10 @@ public class AuthService {
     public RefreshResponse refreshAccessToken(String refreshToken) throws AppException {
         var claims = jwtService.validateJwtToken(refreshToken, JwtService.TokenType.REFRESH_TOKEN);
         String userName = claims.getSubject();
-        Optional<User> user = userRepository.findByUsername(userName);
-        if (user.isEmpty()) {
-            throw new AppException(ErrorCode.USER_NOT_FOUND);
-        }
+        User user = userRepository.findByUsername(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        String accessToken = generateAccessToken(user.get());
+        String accessToken = generateAccessToken(user);
         return new RefreshResponse(accessToken);
     }
 
@@ -195,18 +192,17 @@ public class AuthService {
      * @see AuthService#resetPassword
      */
     public void forgotPassword(String identity) throws AppException {
-        Optional<User> user = userRepository.findByEmailOrUsername(identity);
-        if (user.isEmpty()) {
-            throw new AppException(ErrorCode.USER_NOT_FOUND);
-        }
+        User user = userRepository.findByEmailOrUsername(identity)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         String otp = OTPUtils.generateOTP(6);
-        redisTemplate.opsForValue().set("reset_password:" + user.get().getUsername(), otp, 5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set("reset_password:" + user.getUsername(), otp, 5, TimeUnit.MINUTES);
 
         String emailContent = String.format("""
                 You request reset password
                 Your OTP is %s
                 """, otp);
-        mailService.sendEmail(user.get().getEmail(), "ResetPassword", emailContent);
+        mailService.sendEmail(user.getEmail(), "ResetPassword", emailContent);
     }
 
     /**
@@ -223,19 +219,17 @@ public class AuthService {
      * @see AuthService#forgotPassword
      */
     public void resetPassword(ResetPasswordRequest request) throws AppException {
-        Optional<User> user = userRepository.findByEmailOrUsername(request.identity());
-        if (user.isEmpty()) {
-            throw new AppException(ErrorCode.USER_NOT_FOUND);
-        }
+        User user = userRepository.findByEmailOrUsername(request.identity())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        String storedOtp = redisTemplate.opsForValue().get("reset_password:" + user.get().getUsername());
-        if (!request.otp().equals(storedOtp)) {
+
+        String storedOtp = redisTemplate.opsForValue().get("reset_password:" + user.getUsername());
+        if (!Objects.equals(storedOtp, request.otp())) {
             throw new AppException(ErrorCode.INVALID_OTP);
         }
 
-        User userObj = user.get();
-        userObj.setPasswordHash(passwordEncoder.encode(request.newPassword()));
-        userRepository.save(userObj);
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
     }
 
 }
