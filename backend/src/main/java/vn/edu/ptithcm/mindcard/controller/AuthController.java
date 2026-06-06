@@ -66,7 +66,7 @@ public class AuthController {
     @Operation(summary = "Login", description = "Login and write access/refresh token to Cookies(Also return them in response body")
     @ApiError(value = ErrorCode.LOGIN_FAILED, description = "identity or password mismatch")
     public ResponseEntity<APIResponse.Success<LoginResponse>> login(
-            @RequestBody LoginRequest body
+            @Valid @RequestBody LoginRequest body
     ){
         var token = authService.login(body);
 

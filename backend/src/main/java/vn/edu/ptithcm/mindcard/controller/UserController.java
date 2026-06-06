@@ -61,7 +61,7 @@ public class UserController {
     })
     public ResponseEntity<APIResponse.Success<String>> updateAvatar(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @ModelAttribute @Valid SingleImageFileUploadRequest body
+            @Valid @ModelAttribute SingleImageFileUploadRequest body
     ) {
         int userId = userPrincipal.getId();
         String avatarUrl = userService.updateAvatar(userId, body.file());
@@ -72,7 +72,7 @@ public class UserController {
     @Operation(summary = "Get current user's decks")
     public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> getSelfDecks(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @ModelAttribute @Valid DeckQueryRequest query
+            @Valid @ModelAttribute DeckQueryRequest query
     ) {
 
         Page<DeckSummaryResponse> response = deckService.getUserDecks(userPrincipal.getId(), query);
@@ -83,7 +83,7 @@ public class UserController {
     @Operation(summary = "Get current user's saved decks")
     public ResponseEntity<APIResponse.Paginated<SavedDeckResponse>> getSavedDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @ModelAttribute @Valid SavedDeckQueryRequest query
+            @Valid @ModelAttribute SavedDeckQueryRequest query
     ) {
         int userId = userPrincipal.getId();
         Page<SavedDeckResponse> res = savedDeckService.listSavedDecks(userId, query);
@@ -105,7 +105,7 @@ public class UserController {
     @ApiError(value = ErrorCode.USER_NOT_FOUND, description = "User not found")
     public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> getUserDecks(
             @PathVariable String username,
-            @ModelAttribute @Valid PublicDeckQueryRequest query
+            @Valid @ModelAttribute PublicDeckQueryRequest query
     ) {
         Page<DeckSummaryResponse> response = deckService.getPublicDecksByUsername(username, query);
         return ResponseEntity.ok(APIResponse.paginated(response));

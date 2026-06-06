@@ -116,7 +116,7 @@ public class DeckController {
     public ResponseEntity<APIResponse.Success<?>> updateDeckVisibility(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int deckId,
-            @RequestBody @Valid vn.edu.ptithcm.mindcard.dto.request.deck.UpdateDeckVisibilityRequest request
+            @Valid @RequestBody vn.edu.ptithcm.mindcard.dto.request.deck.UpdateDeckVisibilityRequest request
     ) {
         deckService.updateDeckVisibility(userPrincipal.getId(), deckId, request);
         return ResponseEntity.ok(APIResponse.success());
@@ -158,7 +158,7 @@ public class DeckController {
     @Operation(summary = "Rating Deck (1-5 stars)")
     public ResponseEntity<APIResponse.Success<?>> ratingDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody @Valid DeckRatingRequest body,
+            @Valid @RequestBody DeckRatingRequest body,
             @PathVariable int deckId
     ) {
         deckService.ratingDeck(

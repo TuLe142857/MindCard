@@ -57,7 +57,7 @@ public class CardController {
     public ResponseEntity<APIResponse.Success<?>> updateCard(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
-            @RequestBody @Valid CardUpdateRequest body
+            @Valid @RequestBody CardUpdateRequest body
     ) {
         int userId = userPrincipal.getId();
         cardService.update(userId, cardId, body);
@@ -69,7 +69,7 @@ public class CardController {
     public ResponseEntity<APIResponse.Success<?>> updateFrontImage(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
-            @ModelAttribute @Valid SingleImageFileUploadRequest body
+            @Valid @ModelAttribute SingleImageFileUploadRequest body
     ) {
         int userId = userPrincipal.getId();
         cardService.updateFrontImage(userId, cardId, body.file());
@@ -81,7 +81,7 @@ public class CardController {
     public ResponseEntity<APIResponse.Success<?>> updateFrontAudio(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
-            @ModelAttribute @Valid SingleAudioFileUploadRequest body
+            @Valid @ModelAttribute SingleAudioFileUploadRequest body
     ) {
         int userId = userPrincipal.getId();
         cardService.updateFrontAudio(userId, cardId, body.file());
@@ -93,7 +93,7 @@ public class CardController {
     public ResponseEntity<APIResponse.Success<?>> updateBackImage(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
-            @ModelAttribute @Valid SingleImageFileUploadRequest body
+            @Valid @ModelAttribute SingleImageFileUploadRequest body
     ) {
         int userId = userPrincipal.getId();
         cardService.updateBackImage(userId, cardId, body.file());
@@ -105,7 +105,7 @@ public class CardController {
     public ResponseEntity<APIResponse.Success<?>> updateBackAudio(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
-            @ModelAttribute SingleAudioFileUploadRequest body
+            @Valid @ModelAttribute SingleAudioFileUploadRequest body
     ) {
         int userId = userPrincipal.getId();
         cardService.updateBackAudio(userId, cardId, body.file());
@@ -117,7 +117,7 @@ public class CardController {
     public ResponseEntity<APIResponse.Success<?>> reviewCard(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
-            @RequestBody CardReviewRequest body
+            @Valid @RequestBody CardReviewRequest body
     ) {
         studyService.setCardReviewQuality(userPrincipal.getId(), cardId, body.quality());
         return ResponseEntity.ok(APIResponse.success());
