@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,11 +53,11 @@ public class UserController {
         return ResponseEntity.ok(APIResponse.success(response));
     }
 
-    @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update user avatar, return new avatar url if success")
     @ApiErrors({
-            @ApiError(value = ErrorCode.USER_NOT_FOUND, description = "User not found"),
-            @ApiError(value = ErrorCode.FILE_UPLOAD_FAILED, description = "Failed to upload avatar image")
+        @ApiError(value = ErrorCode.USER_NOT_FOUND, description = "User not found"),
+        @ApiError(value = ErrorCode.FILE_UPLOAD_FAILED, description = "Failed to upload avatar image")
     })
     public ResponseEntity<APIResponse.Success<String>> updateAvatar(
             @AuthenticationPrincipal UserPrincipal userPrincipal,

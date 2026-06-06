@@ -80,7 +80,7 @@ public class DeckController {
         return ResponseEntity.ok(APIResponse.success(response));
     }
 
-    @PostMapping("/{deckId}")
+    @PatchMapping("/{deckId}")
     @Operation(summary = "Update Deck")
     public ResponseEntity<APIResponse.Success<?>> updateDeck(
             @RequestBody DeckUpdateRequest body,

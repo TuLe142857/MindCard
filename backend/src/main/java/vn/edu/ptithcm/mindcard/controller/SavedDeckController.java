@@ -48,8 +48,8 @@ public class SavedDeckController {
     @GetMapping("/{savedDeckId}")
     @Operation(summary = "Get Saved Deck Summary")
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the user")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the user")
     })
     public ResponseEntity<APIResponse.Success<SavedDeckResponse>> getSavedDeckSummary(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -62,9 +62,9 @@ public class SavedDeckController {
     @PatchMapping("/{savedDeckId}")
     @Operation(summary = "Update Saved Deck name and description")
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the user"),
-        @ApiError(value = ErrorCode.VALIDATION_ERROR, description = "Invalid request body")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the user"),
+            @ApiError(value = ErrorCode.VALIDATION_ERROR, description = "Invalid request body")
     })
     public ResponseEntity<APIResponse.Success<SavedDeckResponse>> updateSavedDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -81,8 +81,8 @@ public class SavedDeckController {
             description = "Checks the synchronization status of a saved deck, showing the count of new, updated, and deleted cards."
     )
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the requesting user")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the requesting user")
     })
     public ResponseEntity<APIResponse.Success<DeckSynSummaryResponse>> checkDeckUpdate(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -99,8 +99,8 @@ public class SavedDeckController {
             description = "Retrieves a paginated list of diffs for cards that are out of sync (new, updated, or deleted)."
     )
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the user")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the user")
     })
     public ResponseEntity<APIResponse.Paginated<CardDiffResponse>> showListSyncCards(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -114,14 +114,14 @@ public class SavedDeckController {
         return ResponseEntity.ok(APIResponse.paginated(res));
     }
 
-    @PatchMapping("/{savedDeckId}/sync")
+    @PostMapping("/{savedDeckId}/sync")
     @Operation(
             summary = "Sync all cards of saved deck",
             description = "Synchronizes all out-of-sync cards in the saved deck with their latest versions."
     )
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the requesting user")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the requesting user")
     })
     public ResponseEntity<APIResponse.Success<?>> syncAllCards(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -138,8 +138,8 @@ public class SavedDeckController {
             description = "Synchronizes a specific list of out-of-sync cards in the saved deck."
     )
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the requesting user")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Saved deck not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "Saved deck does not belong to the requesting user")
     })
     public ResponseEntity<APIResponse.Success<?>> syncCards(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -167,7 +167,7 @@ public class SavedDeckController {
         List<CardResponse> cards = (type.equals("new"))
                 ? studyService.getNewCardsBatch(userId, savedDeckId, limit)
                 : studyService.getDueCardBatch(userId, savedDeckId, limit);
-        ;
+
 
         return ResponseEntity.ok(APIResponse.success(cards));
     }

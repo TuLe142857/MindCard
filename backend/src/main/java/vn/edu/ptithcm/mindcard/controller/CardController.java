@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,7 +53,7 @@ public class CardController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PostMapping("/{cardId}")
+    @PatchMapping("/{cardId}")
     @Operation(summary = "Update card")
     public ResponseEntity<APIResponse.Success<?>> updateCard(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -64,7 +65,7 @@ public class CardController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PostMapping(value = "{cardId}/frontImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "{cardId}/frontImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update front image")
     public ResponseEntity<APIResponse.Success<?>> updateFrontImage(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -76,7 +77,7 @@ public class CardController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PostMapping(value = "{cardId}/frontAudio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "{cardId}/frontAudio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update front audio")
     public ResponseEntity<APIResponse.Success<?>> updateFrontAudio(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -88,7 +89,7 @@ public class CardController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PostMapping(value = "{cardId}/backImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "{cardId}/backImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update back image")
     public ResponseEntity<APIResponse.Success<?>> updateBackImage(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -100,7 +101,7 @@ public class CardController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PostMapping(value = "{cardId}/backAudio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "{cardId}/backAudio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update back audio")
     public ResponseEntity<APIResponse.Success<?>> updateBackAudio(
             @AuthenticationPrincipal UserPrincipal userPrincipal,

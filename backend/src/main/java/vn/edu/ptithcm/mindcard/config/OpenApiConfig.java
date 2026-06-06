@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
+import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 
 import java.util.*;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
 public class OpenApiConfig {
     static {
         SpringDocUtils.getConfig().addAnnotationsToIgnore(AuthenticationPrincipal.class);
+        SpringDocUtils.getConfig().addRequestWrapperToIgnore(UserPrincipal.class);
     }
 
     @Bean
