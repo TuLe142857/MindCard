@@ -325,7 +325,7 @@ public class SavedDeckService {
      * <li>{@link ErrorCode#FORBIDDEN} - if the user does not own the saved deck.</li>
      * </ul>
      */
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void syncCard(int userId, int savedDeckId, List<Integer> cardIds) throws AppException {
         SavedDeck savedDeck = savedDeckRepository.findById(savedDeckId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Saved deck not found"));

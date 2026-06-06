@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardContentResponse;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardResponse;
 import vn.edu.ptithcm.mindcard.entity.Card;
+import vn.edu.ptithcm.mindcard.entity.SavedDeck;
 import vn.edu.ptithcm.mindcard.entity.User;
 import vn.edu.ptithcm.mindcard.entity.UserCardProgress;
 import vn.edu.ptithcm.mindcard.entity.embeded.CardContent;
@@ -72,15 +73,20 @@ public class StudyService {
      *
      * @throws AppException if validation fails, specifically:
      * <ul>
-     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the user or saved deck is not found.</li>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - saved-deck not found</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} user is not owner of saved-deck</li>
      * </ul>
      */
     public List<CardResponse> getNewCardsBatch(int userId, int savedDeckId, int limit) throws AppException {
-        try {
-            userRepository.getReferenceById(userId);
-            savedDeckRepository.getReferenceById(savedDeckId);
-        } catch (EntityNotFoundException e) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        SavedDeck savedDeck = savedDeckRepository.findById(savedDeckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Saved deck not found"));
+
+        if (!savedDeck.getUser().getId().equals(userId)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "You are not the owner of this saved-deck");
         }
 
         Pageable pageable = PageRequest.of(0, limit);
@@ -118,15 +124,20 @@ public class StudyService {
      *
      * @throws AppException if validation fails, specifically:
      * <ul>
-     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the user or saved deck is not found.</li>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - saved-deck not found</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} user is not owner of saved-deck</li>
      * </ul>
      */
     public List<CardResponse> getDueCardBatch(int userId, int savedDeckId, int limit) throws AppException {
-        try {
-            userRepository.getReferenceById(userId);
-            savedDeckRepository.getReferenceById(savedDeckId);
-        } catch (EntityNotFoundException e) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        SavedDeck savedDeck = savedDeckRepository.findById(savedDeckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Saved deck not found"));
+
+        if (!savedDeck.getUser().getId().equals(userId)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "You are not the owner of this saved-deck");
         }
 
         Pageable pageable = PageRequest.of(0, limit);
@@ -161,25 +172,29 @@ public class StudyService {
      *
      * @throws AppException if validation fails, specifically:
      * <ul>
-     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the user, card, or progress record is not found.</li>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - card or user-card-progress not found</li>
      * </ul>
      */
     @Transactional
     public void setCardReviewQuality(int userId, int cardId, int quality) throws AppException {
-        User user;
-        Card card;
-        UserCardProgress progress;
-        try {
-            user = userRepository.getReferenceById(userId);
-            card = cardRepository.getReferenceById(cardId);
-            var progressId = UserCardProgress.UserCardProgressId.builder()
-                    .userId(userId)
-                    .cardId(cardId)
-                    .build();
-            progress = userCardProgressRepository.getReferenceById(progressId);
-        } catch (EntityNotFoundException e) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
-        }
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        cardRepository.findById(cardId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Card not found"));
+
+        var progressId = UserCardProgress.UserCardProgressId.builder()
+                .userId(userId)
+                .cardId(cardId)
+                .build();
+
+
+        UserCardProgress progress = userCardProgressRepository.findById(progressId)
+                .orElseThrow(() -> {
+                    String message = "User Card Progress not found. " +
+                            "Please saved deck to start study or sync your saved deck to get latest update";
+                    return new AppException(ErrorCode.RESOURCE_NOT_FOUND, message);
+                });
 
         var repetitionResult = spaceRepetitionAlgorithm.calculate(
                 progress.getEaseFactor(),

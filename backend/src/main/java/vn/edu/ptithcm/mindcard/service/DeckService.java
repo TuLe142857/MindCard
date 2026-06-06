@@ -79,16 +79,20 @@ public class DeckService {
      * @param deckId deck id
      *
      * @return deck summary
+     *
+     * @throws AppException for:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - deck not found</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - Deck is private and user is not owner</li>
+     * </ul>
      */
     public DeckSummaryResponse getDeckSummary(int userId, int deckId) throws AppException {
-        User user;
-        Deck deck;
-        try {
-            user = userRepository.getReferenceById(userId);
-            deck = deckRepository.getReferenceById(deckId);
-        } catch (EntityNotFoundException e) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND);
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND, "User not found"));
+
+        Deck deck = deckRepository.findById(deckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Deck not found"));
 
         if (deck.getVisibility() == Deck.DeckVisibility.PRIVATE
                 && !Objects.equals(deck.getOwner().getId(), user.getId())) {
@@ -117,17 +121,21 @@ public class DeckService {
      *
      * @param userId user id
      * @param deckId deck id
+     *
+     * @throws AppException with:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - deck not found</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} deck is private and user is not owner</li>
+     * </ul>
      */
     @Transactional
     public void saveDeck(int userId, int deckId) throws AppException {
-        User user;
-        Deck deck;
-        try {
-            user = userRepository.getReferenceById(userId);
-            deck = deckRepository.getReferenceById(deckId);
-        } catch (EntityNotFoundException e) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, e.getMessage());
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND, "User not found"));
+
+        Deck deck = deckRepository.findById(deckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Deck not found"));
 
         // Check if deck is private and not owned by the user
         if (deck.getVisibility() == Deck.DeckVisibility.PRIVATE && !deck.getOwner().getId().equals(userId)) {
@@ -180,7 +188,9 @@ public class DeckService {
      *
      * @throws AppException with the following {@link ErrorCode}
      * <ul>
-     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND}</li> - user or deck not found
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND}</li> - deck not found
+     *     <li>{@link ErrorCode#FORBIDDEN} deck is private and user is not owner</li>
      *     <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED}</li> - user has already
      * rating this deck
      * </ul>
@@ -188,13 +198,14 @@ public class DeckService {
      * 5]
      */
     public void ratingDeck(int userId, int deckId, int rating) throws AppException, IllegalArgumentException {
-        User user;
-        Deck deck;
-        try {
-            user = userRepository.getReferenceById(userId);
-            deck = deckRepository.getReferenceById(deckId);
-        } catch (EntityNotFoundException e) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, e.getMessage());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND, "User not found"));
+
+        Deck deck = deckRepository.findById(deckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Deck not found"));
+
+        if (deck.getVisibility() == Deck.DeckVisibility.PRIVATE && !deck.getOwner().getId().equals(userId)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Deck is private");
         }
 
         if (deckRatingRepository.findByDeckIdAndUserId(deckId, userId).isPresent()) {
@@ -235,6 +246,12 @@ public class DeckService {
      * @param updateRequest update request
      *
      * @throws AppException ...
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND}</li> - deck not found
+     *     <li>{@link ErrorCode#FORBIDDEN} deck is private and user is not owner</li>
+     * rating this deck
+     * </ul>
      */
     @Transactional
     public void updateDeck(int userId, int deckId, DeckUpdateRequest updateRequest) throws AppException {
@@ -286,10 +303,8 @@ public class DeckService {
      *
      * @throws AppException if validation fails, specifically:
      * <ul>
-     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck does not
-     * exist.</li>
-     *     <li>{@link ErrorCode#FORBIDDEN} - if the deck does not belong to the
-     * user.</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - deck not found</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the deck does not belong to the user.</li>
      * </ul>
      */
     @Transactional
@@ -377,12 +392,15 @@ public class DeckService {
      * </ul>
      */
     public Page<DeckSummaryResponse> getUserDecks(int userId, DeckQueryRequest query) throws AppException {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         Specification<Deck> spec = Specification.where(DeckSpecification.isDeleted(false))
+                .and(DeckSpecification.hasOwnerId(userId))
                 .and(DeckSpecification.hasKeyword(query.keyword()))
                 .and(DeckSpecification.hasTopicId(query.topicId()))
                 .and(DeckSpecification.hasVisibility(query.visibility()));
-        userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         Page<Deck> decks = deckRepository.findAll(spec, query.toPageable());
         return decks.map(deck -> DeckSummaryResponse.builder()
                 .id(deck.getId())
@@ -419,6 +437,7 @@ public class DeckService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         Specification<Deck> spec = Specification.where(DeckSpecification.isDeleted(false))
+                .and(DeckSpecification.hasOwnerUsername(username))
                 .and(DeckSpecification.hasVisibility(Deck.DeckVisibility.PUBLIC))
                 .and(DeckSpecification.hasKeyword(query.keyword()))
                 .and(DeckSpecification.hasTopicId(query.topicId()));

@@ -1,6 +1,7 @@
 package vn.edu.ptithcm.mindcard.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -12,6 +13,8 @@ import vn.edu.ptithcm.mindcard.config.properties.S3Properties;
 import vn.edu.ptithcm.mindcard.exception.AppException;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 
@@ -34,12 +37,14 @@ public class StorageService {
      * @param contentType the MIME type of the file.
      * @param contentLength the size of the file in bytes.
      *
+     * @return file object key if upload success.
+     *
      * @throws AppException if the upload fails, specifically:
      * <ul>
      *     <li>{@link ErrorCode#FILE_UPLOAD_FAILED}</li>
      * </ul>
      */
-    public void uploadFile(String key, InputStream inputStream, String contentType, long contentLength)
+    public String uploadFile(String key, InputStream inputStream, String contentType, long contentLength)
             throws AppException {
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -52,10 +57,39 @@ public class StorageService {
                     putObjectRequest,
                     RequestBody.fromInputStream(inputStream, contentLength)
             );
+
+            return key;
         } catch (Exception e) {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED, e.getMessage());
         }
 
+    }
+
+    /**
+     * Upload file
+     *
+     * @param key object key
+     * @param file file to upload
+     *
+     * @return {@code null} if file is {@code null} or empty, else return object key if file upload success
+     *
+     * @throws AppException with {@link ErrorCode#FILE_UPLOAD_FAILED}
+     */
+    public String uploadMultipartFile(String key, MultipartFile file) throws AppException {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return this.uploadFile(
+                    key,
+                    new BufferedInputStream(file.getInputStream()),
+                    file.getContentType(),
+                    file.getSize()
+            );
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
     }
 
     /**

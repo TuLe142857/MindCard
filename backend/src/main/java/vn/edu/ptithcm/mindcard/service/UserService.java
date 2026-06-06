@@ -1,7 +1,5 @@
 package vn.edu.ptithcm.mindcard.service;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -114,7 +112,10 @@ public class UserService {
         String oldKey = user.getAvatarObjectKey();
 
         // Upload new avatar file
-        String newKey = uploadAvatar(file);
+        String newKey = storageService.uploadMultipartFile(
+                "avatar_" + UUID.randomUUID(),
+                file
+        );
 
         // Update user entity
         user.setAvatarObjectKey(newKey);
@@ -131,36 +132,5 @@ public class UserService {
 
         // Generate presigned URL for response
         return storageService.generatePresignedUrl(newKey, Duration.ofMinutes(15));
-    }
-
-    /**
-     * Uploads avatar file to storage and returns the generated object key.
-     *
-     * @param file the file to upload.
-     *
-     * @return the generated object key, required not {@code blank} (neither {@code null} nor empty)
-     *
-     * @throws AppException if file upload fails, specifically:
-     * <ul>
-     *     <li>{@link ErrorCode#FILE_UPLOAD_FAILED} - if file is {@code blank}({@code null} or empty) or the S3 upload encounters IO
-     * issues.</li>
-     * </ul>
-     */
-    private String uploadAvatar(MultipartFile file) throws AppException {
-        if (file == null || file.isEmpty()) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
-        }
-        String key = "avatar_" + UUID.randomUUID().toString();
-        try {
-            storageService.uploadFile(
-                    key,
-                    new BufferedInputStream(file.getInputStream()),
-                    file.getContentType(),
-                    file.getSize()
-            );
-        } catch (IOException ioException) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
-        }
-        return key;
     }
 }

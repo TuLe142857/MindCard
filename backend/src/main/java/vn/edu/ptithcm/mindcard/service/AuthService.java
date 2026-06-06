@@ -2,6 +2,7 @@ package vn.edu.ptithcm.mindcard.service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -64,7 +65,6 @@ public class AuthService {
      *     <li>{@link ErrorCode#RESOURCE_ALREADY_EXIST} - if the email is already registered</li>
      *     <li>{@link ErrorCode#SERVER_ERROR} - if the system fails to send the email</li>
      * </ul>
-     *
      * @see AuthService#completeRegistration
      */
     public void requestOtpForRegistration(RegisterOtpRequest request) throws AppException {
@@ -92,7 +92,6 @@ public class AuthService {
      *     <li>{@link ErrorCode#RESOURCE_ALREADY_EXIST} - if the email or username is already taken</li>
      *     <li>{@link ErrorCode#INVALID_OTP} - if the OTP is incorrect or expired, or missing in Redis</li>
      * </ul>
-     *
      * @see AuthService#requestOtpForRegistration
      */
     public void completeRegistration(RegisterCompleteRequest request) throws AppException {
@@ -102,7 +101,7 @@ public class AuthService {
         }
 
         String storedOtp = redisTemplate.opsForValue().get("registration:" + request.email());
-        if (!request.otp().equals(storedOtp)) {
+        if (!Objects.equals(storedOtp, request.otp())) {
             throw new AppException(ErrorCode.INVALID_OTP);
         }
 
@@ -193,7 +192,6 @@ public class AuthService {
      * <ul>
      *     <li>{@link ErrorCode#USER_NOT_FOUND} - if no user matches the provided identity</li>
      * </ul>
-     *
      * @see AuthService#resetPassword
      */
     public void forgotPassword(String identity) throws AppException {
@@ -222,7 +220,6 @@ public class AuthService {
      *     <li>{@link ErrorCode#USER_NOT_FOUND} - if no user matches the provided identity</li>
      *     <li>{@link ErrorCode#INVALID_OTP} - if the recovery OTP is incorrect or expired</li>
      * </ul>
-     *
      * @see AuthService#forgotPassword
      */
     public void resetPassword(ResetPasswordRequest request) throws AppException {
