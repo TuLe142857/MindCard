@@ -15,16 +15,23 @@ import vn.edu.ptithcm.mindcard.validation.ValidSort;
 
 @Builder
 public record PublicDeckQueryRequest(
-        @Schema(nullable = true)
+        @Schema(description = "Search keyword for deck name", nullable = true)
         String keyword,
-        @Schema(nullable = true)
+
+        @Schema(description = "Filter by topic ID", nullable = true)
         Integer topicId,
+
         @ValidSort(allowedFields = {"name", "createdAt", "savedCount", "avgRating"})
+        @Schema(description = "List of fields to sort by")
         List<String> sortBy,
+
         @Min(value = 1, message = "Page must be greater than 0")
+        @Schema(description = "Page number (1-based)", minimum = "1")
         Integer page,
+
         @Min(value = 1, message = "Limit must be greater than 0")
         @Max(value = 100, message = "Limit cannot exceed 100")
+        @Schema(description = "Number of items per page", minimum = "1", maximum = "100")
         Integer limit
         ) {
 

@@ -5,8 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import vn.edu.ptithcm.mindcard.entity.Deck.DeckVisibility;
 
 public record UpdateDeckVisibilityRequest(
-        @Schema(description = "The new visibility status of the deck", example = "PRIVATE")
         @NotNull(message = "Visibility cannot be null")
+        @Schema(description = "The new visibility status of the deck")
         DeckVisibility visibility
-) {
+        ) {
+
 }

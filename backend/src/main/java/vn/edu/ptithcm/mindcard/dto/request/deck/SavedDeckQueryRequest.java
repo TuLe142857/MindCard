@@ -13,17 +13,18 @@ import vn.edu.ptithcm.mindcard.utils.PaginationUtils;
 import vn.edu.ptithcm.mindcard.validation.ValidSort;
 
 public record SavedDeckQueryRequest(
-        @Schema(nullable = true)
+        @Schema(description = "Search keyword for saved deck name", nullable = true)
         String keyword,
 
         @ValidSort(allowedFields = {"savedAt"})
+        @Schema(description = "List of fields to sort by")
         List<String> sortBy,
 
-        @Schema(defaultValue = "1")
+        @Schema(description = "Page number (1-based)", defaultValue = "1", minimum = "1")
         @Min(value = 1, message = "Page must be greater than 0")
         Integer page,
 
-        @Schema(defaultValue = "10")
+        @Schema(description = "Number of items per page", defaultValue = "10", minimum = "1", maximum = "100")
         @Min(value = 1, message = "Limit must be greater than 0")
         @Max(value = 100, message = "Limit cannot exceed 100")
         Integer limit

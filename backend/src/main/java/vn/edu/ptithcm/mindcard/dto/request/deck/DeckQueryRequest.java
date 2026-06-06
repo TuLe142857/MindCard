@@ -14,18 +14,26 @@ import vn.edu.ptithcm.mindcard.utils.PaginationUtils;
 import vn.edu.ptithcm.mindcard.validation.ValidSort;
 
 public record DeckQueryRequest(
-        @Schema(nullable = true)
+        @Schema(description = "Search keyword for deck name", nullable = true)
         String keyword,
-        @Schema(nullable = true)
+
+        @Schema(description = "Filter by topic ID", nullable = true)
         Integer topicId,
-        @Schema(nullable = true)
+
+        @Schema(description = "Filter by visibility", nullable = true)
         Deck.DeckVisibility visibility,
+
         @ValidSort(allowedFields = {"name", "createdAt", "savedCount", "avgRating"})
+        @Schema(description = "List of fields to sort by (e.g., name:asc, createdAt:desc)")
         List<String> sortBy,
+
         @Min(value = 1, message = "Page must be greater than 0")
+        @Schema(description = "Page number (1-based)", nullable = true, minimum = "1")
         Integer page,
+
         @Min(value = 1, message = "Limit must be greater than 0")
         @Max(value = 100, message = "Limit cannot exceed 100")
+        @Schema(description = "Number of items per page", nullable = true, minimum = "1", maximum = "100")
         Integer limit) {
 
     public DeckQueryRequest {
