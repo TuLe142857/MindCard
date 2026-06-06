@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import vn.edu.ptithcm.mindcard.dto.request.deck.SavedDeckQueryRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.UpdateSavedDeckRequest;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardDiffResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSynSummaryResponse;
@@ -22,6 +24,7 @@ import vn.edu.ptithcm.mindcard.repository.CardRepository;
 import vn.edu.ptithcm.mindcard.repository.SavedDeckRepository;
 import vn.edu.ptithcm.mindcard.repository.UserCardProgressRepository;
 import vn.edu.ptithcm.mindcard.repository.projection.CardSyncProjection;
+import vn.edu.ptithcm.mindcard.repository.specification.SavedDeckSpecification;
 
 @Service
 public class SavedDeckService {
@@ -38,15 +41,17 @@ public class SavedDeckService {
     @Autowired
     private StorageService storageService;
 
-    public Page<SavedDeckResponse> listSavedDecks(int userId, Pageable pageable) {
-        return savedDeckRepository.findByUserId(userId, pageable)
+    public Page<SavedDeckResponse> listSavedDecks(int userId, SavedDeckQueryRequest query) {
+        Specification<SavedDeck> spec = Specification.where(SavedDeckSpecification.hasKeyword(query.keyword()));
+
+        return savedDeckRepository.findAll(spec, query.toPageable())
                 .map(savedDeck -> mapToSavedDeckResponse(savedDeck, userId));
     }
 
     /**
      * Retrieves the summary of a specific saved deck including study progress.
      *
-     * @param userId the ID of the requesting user.
+     * @param userId      the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck.
      * @return a {@link SavedDeckResponse} containing summary and progress
      * stats.
@@ -72,9 +77,9 @@ public class SavedDeckService {
     /**
      * Updates the custom name and description of a user's saved deck.
      *
-     * @param userId the ID of the requesting user.
+     * @param userId      the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck to update.
-     * @param request the request containing the new name and description.
+     * @param request     the request containing the new name and description.
      * @return a {@link SavedDeckResponse} reflecting the updated saved deck.
      * @throws AppException if any validation fails, specifically:
      * <ul>
@@ -115,8 +120,8 @@ public class SavedDeckService {
         int reviewCards = userCardProgressRepository.countCardsByStatus(userId, deckId, UserCardProgress.CardStatus.REVIEW);
         int dueCards = userCardProgressRepository.countDueCards(userId, deckId);
 
-        boolean isOriginalDeckActive = originalDeck.getVisibility() == Deck.DeckVisibility.PUBLIC 
-                                       && !originalDeck.getIsDeleted();
+        boolean isOriginalDeckActive = originalDeck.getVisibility() == Deck.DeckVisibility.PUBLIC
+                && !originalDeck.getIsDeleted();
 
         boolean hasUpdate = false;
         if (isOriginalDeckActive) {
@@ -150,7 +155,7 @@ public class SavedDeckService {
      * and the original deck. Computes the count of new cards, updated cards,
      * and deleted cards.
      *
-     * @param userId the ID of the requesting user.
+     * @param userId      the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck.
      * @return a {@link DeckSynSummaryResponse} containing the counts of
      * changes.
@@ -187,9 +192,9 @@ public class SavedDeckService {
      * Retrieves a paginated list of card differences (diffs) between a user's
      * saved progress and the creator's original deck.
      *
-     * @param userId the ID of the requesting user.
+     * @param userId      the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck.
-     * @param pageable pagination and sorting information.
+     * @param pageable    pagination and sorting information.
      * @return a page of {@link CardDiffResponse} containing differences for
      * each out-of-sync card.
      * @throws AppException if any validation fails, specifically:
@@ -300,8 +305,8 @@ public class SavedDeckService {
      * {@link UserCardProgress}</li>
      * </ul>
      *
-     * @param userId the ID of user who do this action
-     * @param cardIds the ID of cards need to sync
+     * @param userId      the ID of user who do this action
+     * @param cardIds     the ID of cards need to sync
      * @param savedDeckId the ID of the saved deck.
      */
     @org.springframework.transaction.annotation.Transactional
@@ -322,10 +327,10 @@ public class SavedDeckService {
     /**
      * Syncs all out-of-sync cards in a saved deck.
      *
-     * @param userId the ID of the requesting user.
+     * @param userId      the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck.
      * @throws AppException if the saved deck does not exist or user doesn't own
-     * it.
+     *                      it.
      */
     @org.springframework.transaction.annotation.Transactional
     public void syncAll(int userId, int savedDeckId) throws AppException {

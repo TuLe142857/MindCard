@@ -1,8 +1,6 @@
 package vn.edu.ptithcm.mindcard.controller;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,7 +9,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +20,7 @@ import vn.edu.ptithcm.mindcard.annotation.ApiErrors;
 import vn.edu.ptithcm.mindcard.dto.request.common.SingleImageFileUploadRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.DeckQueryRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.PublicDeckQueryRequest;
+import vn.edu.ptithcm.mindcard.dto.request.deck.SavedDeckQueryRequest;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.SavedDeckResponse;
@@ -58,8 +56,8 @@ public class UserController {
     @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update user avatar, return new avatar url if success")
     @ApiErrors({
-        @ApiError(value = ErrorCode.USER_NOT_FOUND, description = "User not found"),
-        @ApiError(value = ErrorCode.FILE_UPLOAD_FAILED, description = "Failed to upload avatar image")
+            @ApiError(value = ErrorCode.USER_NOT_FOUND, description = "User not found"),
+            @ApiError(value = ErrorCode.FILE_UPLOAD_FAILED, description = "Failed to upload avatar image")
     })
     public ResponseEntity<APIResponse.Success<String>> updateAvatar(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -85,12 +83,10 @@ public class UserController {
     @Operation(summary = "Get current user's saved decks")
     public ResponseEntity<APIResponse.Paginated<SavedDeckResponse>> getSavedDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit
+            @ModelAttribute @Valid SavedDeckQueryRequest query
     ) {
-        Pageable pageable = PageRequest.of(page - 1, limit);
         int userId = userPrincipal.getId();
-        Page<SavedDeckResponse> res = savedDeckService.listSavedDecks(userId, pageable);
+        Page<SavedDeckResponse> res = savedDeckService.listSavedDecks(userId, query);
         return ResponseEntity.ok(APIResponse.paginated(res));
     }
 
