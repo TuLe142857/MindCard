@@ -33,7 +33,6 @@ import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.dto.response.deck.DeckSummaryResponse;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
-import vn.edu.ptithcm.mindcard.service.AuthService;
 import vn.edu.ptithcm.mindcard.service.CardService;
 import vn.edu.ptithcm.mindcard.service.DeckService;
 
@@ -48,15 +47,13 @@ public class DeckController {
     @Autowired
     private CardService cardService;
 
-    @Autowired
-    private AuthService authService;
-
     @PostMapping("")
     @Operation(summary = "Create deck")
     public ResponseEntity<APIResponse.Success<?>> createDeck(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody DeckCreateRequest body
     ) {
-        int userId = authService.getCurrentUserPrincipal().getId();
+        int userId = userPrincipal.getId();
         deckService.createDeck(userId, body);
         return ResponseEntity.ok(APIResponse.success());
     }
@@ -73,9 +70,10 @@ public class DeckController {
     @GetMapping("/{deckId}")
     @Operation(summary = "Get Deck by id")
     public ResponseEntity<APIResponse.Success<DeckSummaryResponse>> getDeckDetails(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int deckId
     ) {
-        int userId = authService.getCurrentUserPrincipal().getId();
+        int userId = userPrincipal.getId();
         var response = deckService.getDeckSummary(userId, deckId);
         return ResponseEntity.ok(APIResponse.success(response));
     }
@@ -83,11 +81,12 @@ public class DeckController {
     @PatchMapping("/{deckId}")
     @Operation(summary = "Update Deck")
     public ResponseEntity<APIResponse.Success<?>> updateDeck(
-            @RequestBody DeckUpdateRequest body,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Valid @RequestBody DeckUpdateRequest body,
             @PathVariable int deckId
     ) {
         deckService.updateDeck(
-                authService.getCurrentUserPrincipal().getId(),
+                userPrincipal.getId(),
                 deckId,
                 body
         );
@@ -148,9 +147,10 @@ public class DeckController {
     @PostMapping("/{deckId}/save")
     @Operation(summary = "Save deck")
     public ResponseEntity<APIResponse.Success<?>> saveDeck(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int deckId
     ) {
-        int userId = authService.getCurrentUserPrincipal().getId();
+        int userId = userPrincipal.getId();
         deckService.saveDeck(userId, deckId);
         return ResponseEntity.ok(APIResponse.success());
     }
@@ -158,11 +158,12 @@ public class DeckController {
     @PostMapping("/{deckId}/rating")
     @Operation(summary = "Rating Deck (1-5 stars)")
     public ResponseEntity<APIResponse.Success<?>> ratingDeck(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid DeckRatingRequest body,
             @PathVariable int deckId
     ) {
         deckService.ratingDeck(
-                authService.getCurrentUserPrincipal().getId(),
+                userPrincipal.getId(),
                 deckId,
                 body.rating()
         );
@@ -175,10 +176,11 @@ public class DeckController {
             description = "Request type: form data. To pass list of card: use keyword cards[index].{attribute_name} for each form value"
     )
     public ResponseEntity<APIResponse.Success<?>> addCardToDeck(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @ModelAttribute CardCreateBatchRequest form,
             @PathVariable int deckId
     ) {
-        int userId = authService.getCurrentUserPrincipal().getId();
+        int userId = userPrincipal.getId();
         cardService.createCards(userId, deckId, form.cards());
         return ResponseEntity.ok(APIResponse.success());
     }
