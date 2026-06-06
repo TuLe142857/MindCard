@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import vn.edu.ptithcm.mindcard.dto.request.deck.SavedDeckQueryRequest;
 import vn.edu.ptithcm.mindcard.dto.request.deck.UpdateSavedDeckRequest;
 import vn.edu.ptithcm.mindcard.dto.response.card.CardDiffResponse;
@@ -38,6 +39,14 @@ public class SavedDeckService {
 
     private final StorageService storageService;
 
+    /**
+     * Retrieves a paginated list of saved decks for the specified user.
+     *
+     * @param userId the ID of the user.
+     * @param query the pagination and search query.
+     *
+     * @return a page of {@link SavedDeckResponse} DTOs.
+     */
     public Page<SavedDeckResponse> listSavedDecks(int userId, SavedDeckQueryRequest query) {
         Specification<SavedDeck> spec = Specification.where(SavedDeckSpecification.hasKeyword(query.keyword()));
 
@@ -48,16 +57,16 @@ public class SavedDeckService {
     /**
      * Retrieves the summary of a specific saved deck including study progress.
      *
-     * @param userId      the ID of the requesting user.
+     * @param userId the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck.
+     *
      * @return a {@link SavedDeckResponse} containing summary and progress
      * stats.
+     *
      * @throws AppException if any validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck does not
-     * exist.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the saved deck does not belong to
-     * the user.</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck does not exist.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the saved deck does not belong to the user.</li>
      * </ul>
      */
     public SavedDeckResponse getSavedDeckSummary(int userId, int savedDeckId) throws AppException {
@@ -74,16 +83,16 @@ public class SavedDeckService {
     /**
      * Updates the custom name and description of a user's saved deck.
      *
-     * @param userId      the ID of the requesting user.
+     * @param userId the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck to update.
-     * @param request     the request containing the new name and description.
+     * @param request the request containing the new name and description.
+     *
      * @return a {@link SavedDeckResponse} reflecting the updated saved deck.
+     *
      * @throws AppException if any validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck does not
-     * exist.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the saved deck does not belong to
-     * the user.</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck does not exist.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the saved deck does not belong to the user.</li>
      * </ul>
      */
     public SavedDeckResponse updateSavedDeck(int userId, int savedDeckId, UpdateSavedDeckRequest request) throws AppException {
@@ -152,10 +161,12 @@ public class SavedDeckService {
      * and the original deck. Computes the count of new cards, updated cards,
      * and deleted cards.
      *
-     * @param userId      the ID of the requesting user.
+     * @param userId the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck.
+     *
      * @return a {@link DeckSynSummaryResponse} containing the counts of
      * changes.
+     *
      * @throws AppException if any validation fails, specifically:
      * <ul>
      * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck with the
@@ -189,11 +200,13 @@ public class SavedDeckService {
      * Retrieves a paginated list of card differences (diffs) between a user's
      * saved progress and the creator's original deck.
      *
-     * @param userId      the ID of the requesting user.
+     * @param userId the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck.
-     * @param pageable    pagination and sorting information.
+     * @param pageable pagination and sorting information.
+     *
      * @return a page of {@link CardDiffResponse} containing differences for
      * each out-of-sync card.
+     *
      * @throws AppException if any validation fails, specifically:
      * <ul>
      * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck with the
@@ -302,9 +315,15 @@ public class SavedDeckService {
      * {@link UserCardProgress}</li>
      * </ul>
      *
-     * @param userId      the ID of user who do this action
-     * @param cardIds     the ID of cards need to sync
+     * @param userId the ID of user who do this action
+     * @param cardIds the ID of cards need to sync
      * @param savedDeckId the ID of the saved deck.
+     *
+     * @throws AppException if validation fails, specifically:
+     * <ul>
+     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck is not found.</li>
+     * <li>{@link ErrorCode#FORBIDDEN} - if the user does not own the saved deck.</li>
+     * </ul>
      */
     @org.springframework.transaction.annotation.Transactional
     public void syncCard(int userId, int savedDeckId, List<Integer> cardIds) throws AppException {
@@ -324,12 +343,16 @@ public class SavedDeckService {
     /**
      * Syncs all out-of-sync cards in a saved deck.
      *
-     * @param userId      the ID of the requesting user.
+     * @param userId the ID of the requesting user.
      * @param savedDeckId the ID of the saved deck.
-     * @throws AppException if the saved deck does not exist or user doesn't own
-     *                      it.
+     *
+     * @throws AppException if validation fails, specifically:
+     * <ul>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the saved deck is not found.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user does not own the saved deck.</li>
+     * </ul>
      */
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void syncAll(int userId, int savedDeckId) throws AppException {
         SavedDeck savedDeck = savedDeckRepository.findById(savedDeckId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Saved deck not found"));

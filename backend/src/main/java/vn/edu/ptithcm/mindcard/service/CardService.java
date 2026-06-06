@@ -45,19 +45,21 @@ public class CardService {
     /**
      * Retrieves a paginated list of cards for a specific deck.
      * <ul>
-     * <li>If deck is {@code PRIVATE} only the {@code owner} of the deck is
+     *     <li>If deck is {@code PRIVATE} only the {@code owner} of the deck is
      * allowed to list its cards.</li>
-     * <li>If deck is {@code PUBLIC} anyone can list its cards</li>
+     *     <li>If deck is {@code PUBLIC} anyone can list its cards</li>
      * </ul>
      *
      * @param userId the ID of the user requesting the list.
      * @param deckId the ID of the deck.
      * @param pageable pagination and sorting information.
+     *
      * @return a page of cards mapped to {@link CardResponse} DTOs.
+     *
      * @throws AppException with the following {@link ErrorCode}s:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not allowed to access
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not allowed to access
      * this deck and its cards.</li>
      * </ul>
      */
@@ -98,7 +100,9 @@ public class CardService {
      *
      * @param file -
      * @param keyPrefix -
+     *
      * @return -
+     *
      * @throws AppException -
      */
     private String uploadFile(MultipartFile file, String keyPrefix) throws AppException {
@@ -119,6 +123,18 @@ public class CardService {
         return key;
     }
 
+    /**
+     * Creates new cards in the specified deck.
+     *
+     * @param userId the ID of the requesting user.
+     * @param deckId the ID of the deck to add cards to.
+     * @param createRequests the list of card creation requests.
+     *
+     * @throws AppException if validation fails, specifically:
+     * <ul>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck.</li>
+     * </ul>
+     */
     @Transactional
     public void createCards(int userId, int deckId, List<CardCreateRequest> createRequests) throws AppException {
         Deck deck = deckRepository.getReferenceById(deckId);
@@ -174,14 +190,16 @@ public class CardService {
      *
      * @param userId the ID of the user requesting the modification.
      * @param cardId the ID of the card to retrieve.
+     *
      * @return the requested {@link Card}.
+     *
      * @throws AppException if any validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
      * </ul>
      */
-    private Card getCardForUpdate(int userId, int cardId) throws AppException{
+    private Card getCardForUpdate(int userId, int cardId) throws AppException {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -245,14 +263,16 @@ public class CardService {
      *
      * @param userId the ID of the requesting user.
      * @param cardId the ID of the card to delete.
+     *
      * @throws AppException if any validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - Bubbled up from
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - Bubbled up from
      * {@link #getCardForUpdate(int, int)} if the card is not found.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - Bubbled up from
-     * {@link #getCardForUpdate(int, int)} if the card's deck does not belong to
+     *     <li>{@link ErrorCode#FORBIDDEN} - Bubbled up from
+     *   {@link #getCardForUpdate(int, int)} if the card's deck does not belong to
      * the user.</li>
      * </ul>
+     *
      * @see #getCardForUpdate(int, int)
      */
     @Transactional

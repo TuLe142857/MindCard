@@ -8,11 +8,11 @@ import org.springframework.data.domain.Sort;
 public class PaginationUtils {
 
     /**
-     * Parses a list of sort parameters into a Sort object. Assumes that the
-     * parameters have already been validated by @ValidSort.
+     * Parses a list of sort parameters into a Sort object. Assumes that the parameters have already been validated.
      *
-     * @param sortParams list of sort parameters (e.g. ["createdAt:desc",
-     * "name:asc"])
+     * @param sortParams list of sort parameters. Syntax: {@code fieldName}:{@code sortDirection} or {@code fieldName}
+     * (e.g. ["createdAt:desc", "name:asc", "avgRating"])
+     *
      * @return Sort object
      */
     public static Sort parseSort(List<String> sortParams) {

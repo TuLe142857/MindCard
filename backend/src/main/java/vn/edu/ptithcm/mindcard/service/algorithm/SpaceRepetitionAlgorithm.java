@@ -19,8 +19,8 @@ public interface SpaceRepetitionAlgorithm {
             int interval,
             int repetitions,
             Instant nextReview
-    )
-    {}
+    ) {
+    }
 
     public ScheduleResult calculate(double easinessFactor, int interval, int repetitions, int quality);
 }

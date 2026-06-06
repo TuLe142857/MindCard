@@ -58,6 +58,7 @@ public class AuthService {
      * Requests user registration by sending a validation OTP to the user's email.
      *
      * @param request the registration request details containing email.
+     *
      * @throws AppException if any business validation fails, specifically:
      * <ul>
      *     <li>{@link ErrorCode#RESOURCE_ALREADY_EXIST} - if the email is already registered</li>
@@ -85,6 +86,7 @@ public class AuthService {
      * Saves the new user into the database with a hashed password.
      *
      * @param request the registration details containing email, username, password, and OTP
+     *
      * @throws AppException if validation fails, specifically:
      * <ul>
      *     <li>{@link ErrorCode#RESOURCE_ALREADY_EXIST} - if the email or username is already taken</li>
@@ -93,7 +95,7 @@ public class AuthService {
      *
      * @see AuthService#requestOtpForRegistration
      */
-    public void completeRegistration(RegisterCompleteRequest request) {
+    public void completeRegistration(RegisterCompleteRequest request) throws AppException {
         if (userRepository.findByEmail(request.email()).isPresent()
                 || userRepository.findByUsername(request.username()).isPresent()) {
             throw new AppException(ErrorCode.RESOURCE_ALREADY_EXIST, "Email or Username already exists");
@@ -118,13 +120,15 @@ public class AuthService {
      * Generates a pair of short-lived Access Token and long-lived Refresh Token upon success.
      *
      * @param request the login credentials containing identity and password
+     *
      * @return a {@link LoginResponse} containing both generated JWT tokens
+     *
      * @throws AppException if authentication fails, specifically:
      * <ul>
      *     <li>{@link ErrorCode#LOGIN_FAILED} - if the user does not exist or the password is incorrect</li>
      * </ul>
      */
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) throws AppException {
         Optional<User> user = userRepository.findByEmailOrUsername(request.identity());
         if (user.isEmpty()
                 || (!passwordEncoder.matches(request.password(), user.get().getPasswordHash()))) {
@@ -159,8 +163,13 @@ public class AuthService {
      * Generates a new Access Token using a valid Refresh Token.
      *
      * @param refreshToken the valid, non-expired Refresh Token string
+     *
      * @return a {@link RefreshResponse} containing the newly generated Access Token
-     * @throws AppException if the Refresh Token is invalid, expired, or blacklisted
+     *
+     * @throws AppException if the Refresh Token is invalid, expired, or blacklisted, specifically:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND} - if the user associated with the token is not found.</li>
+     * </ul>
      */
     public RefreshResponse refreshAccessToken(String refreshToken) throws AppException {
         var claims = jwtService.validateJwtToken(refreshToken, JwtService.TokenType.REFRESH_TOKEN);
@@ -179,12 +188,13 @@ public class AuthService {
      * The recovery OTP is cached in Redis against the username for 5 minutes.
      *
      * @param identity the user's username or email address
+     *
      * @throws AppException if validation fails, specifically:
      * <ul>
      *     <li>{@link ErrorCode#USER_NOT_FOUND} - if no user matches the provided identity</li>
      * </ul>
-     * 
-     * @see AuthService#resetPassword 
+     *
+     * @see AuthService#resetPassword
      */
     public void forgotPassword(String identity) throws AppException {
         Optional<User> user = userRepository.findByEmailOrUsername(identity);
@@ -206,13 +216,14 @@ public class AuthService {
      * Updates the password hash in the database.
      *
      * @param request the details containing identity, OTP, and the new password
+     *
      * @throws AppException if validation fails, specifically:
      * <ul>
      *     <li>{@link ErrorCode#USER_NOT_FOUND} - if no user matches the provided identity</li>
      *     <li>{@link ErrorCode#INVALID_OTP} - if the recovery OTP is incorrect or expired</li>
      * </ul>
-     * 
-     * @see AuthService#forgotPassword 
+     *
+     * @see AuthService#forgotPassword
      */
     public void resetPassword(ResetPasswordRequest request) throws AppException {
         Optional<User> user = userRepository.findByEmailOrUsername(request.identity());

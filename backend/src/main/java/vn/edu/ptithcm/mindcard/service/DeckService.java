@@ -46,6 +46,18 @@ public class DeckService {
 
     private final UserCardProgressRepository userCardProgressRepository;
 
+    /**
+     * Creates a new deck for the specified user.
+     *
+     * @param userId the ID of the user creating the deck
+     * @param request the details of the deck to create
+     *
+     * @throws AppException if validation fails, specifically:
+     * <ul>
+     *
+     *     <li>{@link ErrorCode#RESOURCE_ALREADY_EXIST} - if a deck with the same name already exists for the user.</li>
+     * </ul>
+     */
     @Transactional
     public void createDeck(int userId, DeckCreateRequest request) throws AppException {
         if (deckRepository.findByOwnerIdAndName(userId, request.name()).isPresent()) {
@@ -65,9 +77,10 @@ public class DeckService {
      *
      * @param userId viewer id
      * @param deckId deck id
+     *
      * @return deck summary
      */
-    public DeckSummaryResponse getDeckSummary(int userId, int deckId) {
+    public DeckSummaryResponse getDeckSummary(int userId, int deckId) throws AppException {
         User user;
         Deck deck;
         try {
@@ -164,10 +177,11 @@ public class DeckService {
      * @param userId user id
      * @param deckId deck id
      * @param rating rating in range [1, 5]
+     *
      * @throws AppException with the following {@link ErrorCode}
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND}</li> - user or deck not found
-     * <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED}</li> - user has already
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND}</li> - user or deck not found
+     *     <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED}</li> - user has already
      * rating this deck
      * </ul>
      * @throws IllegalArgumentException when {@code rating} is not in range [1,
@@ -219,6 +233,7 @@ public class DeckService {
      * Update Deck
      *
      * @param updateRequest update request
+     *
      * @throws AppException ...
      */
     @Transactional
@@ -268,11 +283,12 @@ public class DeckService {
      * @param userId the ID of the requesting user.
      * @param deckId the ID of the deck to update.
      * @param request the request containing the new visibility.
+     *
      * @throws AppException if validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck does not
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck does not
      * exist.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the deck does not belong to the
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the deck does not belong to the
      * user.</li>
      * </ul>
      */
@@ -294,10 +310,11 @@ public class DeckService {
      *
      * @param userId the ID of the requesting user.
      * @param deckId the ID of the deck to delete.
+     *
      * @throws AppException if any validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the
      * deck.</li>
      * </ul>
      */
@@ -319,6 +336,7 @@ public class DeckService {
      *
      * @param queryRequest the query filters including keyword, topicId, and
      * sorting
+     *
      * @return a page of public decks mapped to {@link DeckSummaryResponse} DTOs
      */
     public Page<DeckSummaryResponse> searchPublicDecks(PublicDeckQueryRequest queryRequest) {
@@ -349,10 +367,12 @@ public class DeckService {
      *
      * @param userId the ID of the deck owner
      * @param query pageable and query
+     *
      * @return a page of decks mapped to {@link DeckSummaryResponse} DTOs
+     *
      * @throws AppException with the following {@link ErrorCode}:
      * <ul>
-     * <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with specified userId
+     *     <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with specified userId
      * is not found.</li>
      * </ul>
      */
@@ -385,10 +405,12 @@ public class DeckService {
      *
      * @param username the username of the deck owner
      * @param query pagination query
+     *
      * @return a page of public decks mapped to {@link DeckSummaryResponse} DTOs
+     *
      * @throws AppException with the following {@link ErrorCode}:
      * <ul>
-     * <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with the specified
+     *     <li>{@link ErrorCode#USER_NOT_FOUND} - if the user with the specified
      * username is not found.</li>
      * </ul>
      */
