@@ -1,34 +1,42 @@
 package vn.edu.ptithcm.mindcard.controller;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import lombok.RequiredArgsConstructor;
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
 import vn.edu.ptithcm.mindcard.annotation.ApiErrors;
 import vn.edu.ptithcm.mindcard.config.properties.JWTProperties;
-import vn.edu.ptithcm.mindcard.dto.request.auth.*;
-import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
+import vn.edu.ptithcm.mindcard.dto.request.auth.ForgotPasswordRequest;
+import vn.edu.ptithcm.mindcard.dto.request.auth.LoginRequest;
+import vn.edu.ptithcm.mindcard.dto.request.auth.LogoutRequest;
+import vn.edu.ptithcm.mindcard.dto.request.auth.RefreshRequest;
+import vn.edu.ptithcm.mindcard.dto.request.auth.RegisterCompleteRequest;
+import vn.edu.ptithcm.mindcard.dto.request.auth.RegisterOtpRequest;
+import vn.edu.ptithcm.mindcard.dto.request.auth.ResetPasswordRequest;
 import vn.edu.ptithcm.mindcard.dto.response.auth.LoginResponse;
 import vn.edu.ptithcm.mindcard.dto.response.auth.RefreshResponse;
+import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.exception.AppException;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.JwtService;
 import vn.edu.ptithcm.mindcard.service.AuthService;
-import lombok.RequiredArgsConstructor;
-
 
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Auth")
 @RequiredArgsConstructor
 public class AuthController {
+
     private final AuthService authService;
 
     private final JwtService jwtService;
@@ -39,11 +47,11 @@ public class AuthController {
     @Operation(summary = "Step 1/2 of registration")
     @ApiErrors({
             @ApiError(value = ErrorCode.RESOURCE_ALREADY_EXIST, description = "Email already exist"),
-            @ApiError(value = ErrorCode.SERVER_ERROR,  description = "Can not send email")
+            @ApiError(value = ErrorCode.SERVER_ERROR, description = "Can not send email")
     })
     public ResponseEntity<APIResponse.Success<?>> requestOTPRegistration(
             @Valid @RequestBody RegisterOtpRequest body
-    ){
+    ) {
         authService.requestOtpForRegistration(body);
         return ResponseEntity.ok(APIResponse.success(null, "An OTP code was send to your email"));
     }
@@ -56,18 +64,17 @@ public class AuthController {
     })
     public ResponseEntity<APIResponse.Success<?>> completeRegistration(
             @Valid @RequestBody RegisterCompleteRequest body
-    ){
+    ) {
         authService.completeRegistration(body);
         return ResponseEntity.ok(APIResponse.success(body, "Success"));
     }
-
 
     @PostMapping("/login")
     @Operation(summary = "Login", description = "Login and write access/refresh token to Cookies(Also return them in response body")
     @ApiError(value = ErrorCode.LOGIN_FAILED, description = "identity or password mismatch")
     public ResponseEntity<APIResponse.Success<LoginResponse>> login(
             @Valid @RequestBody LoginRequest body
-    ){
+    ) {
         var token = authService.login(body);
 
         ResponseCookie accessCookie = ResponseCookie.from(jwtProperties.accessTokenCookieName(), token.accessToken())
@@ -93,10 +100,9 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "Logout", description = "Logout and add jwt token(access/refresh) to blacklist (if token not expired).")
     public ResponseEntity<APIResponse.Success<?>> logout(
-        @RequestBody(required = false)
-        LogoutRequest body,
-        HttpServletRequest request
-    ){
+            @RequestBody(required = false) LogoutRequest body,
+            HttpServletRequest request
+    ) {
         String accessToken = (body != null && body.accessToken() != null)
                 ? body.accessToken()
                 : jwtService.extractAccessTokenFromRequest(request);
@@ -118,14 +124,13 @@ public class AuthController {
             @ApiError(ErrorCode.INVALID_JWT_TOKEN)
     })
     public ResponseEntity<APIResponse.Success<RefreshResponse>> refreshAccessToken(
-            @RequestBody(required = false)
-            RefreshRequest body,
+            @RequestBody(required = false) RefreshRequest body,
             HttpServletRequest request
-    ){
+    ) {
         String refreshToken = (body != null && body.refreshToken() != null)
                 ? body.refreshToken()
                 : jwtService.extractRefreshTokenFromRequest(request);
-        if (refreshToken == null){
+        if (refreshToken == null) {
             throw new AppException(ErrorCode.INVALID_JWT_TOKEN, "No token provided");
         }
         RefreshResponse res = authService.refreshAccessToken(refreshToken);
@@ -137,8 +142,7 @@ public class AuthController {
                 .build();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .body(APIResponse.success(res))
-                ;
+                .body(APIResponse.success(res));
     }
 
     @PostMapping("/forgot_password")
@@ -146,7 +150,7 @@ public class AuthController {
     @ApiError(ErrorCode.USER_NOT_FOUND)
     public ResponseEntity<APIResponse.Success<?>> forgotPassword(
             @Valid @RequestBody ForgotPasswordRequest body
-    ){
+    ) {
         authService.forgotPassword(body.identity());
         return ResponseEntity.ok(APIResponse.success(null, "An OTP was send to your email"));
     }
@@ -159,7 +163,7 @@ public class AuthController {
     })
     public ResponseEntity<APIResponse.Success<?>> resetPassword(
             @Valid @RequestBody ResetPasswordRequest body
-    ){
+    ) {
         authService.resetPassword(body);
         return ResponseEntity.ok(APIResponse.success());
     }

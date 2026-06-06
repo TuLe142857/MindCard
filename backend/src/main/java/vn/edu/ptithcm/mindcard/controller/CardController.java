@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
 import vn.edu.ptithcm.mindcard.annotation.ApiErrors;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardReviewRequest;
@@ -26,7 +27,6 @@ import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 import vn.edu.ptithcm.mindcard.service.CardService;
 import vn.edu.ptithcm.mindcard.service.StudyService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/cards")
@@ -41,8 +41,8 @@ public class CardController {
     @DeleteMapping("/{cardId}")
     @Operation(summary = "Delete card", description = "Soft deletes a card owned by the user.")
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Card not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "User is not the owner of the card's deck")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Card not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "User is not the owner of the card's deck")
     })
     public ResponseEntity<APIResponse.Success<?>> deleteCard(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -53,7 +53,11 @@ public class CardController {
     }
 
     @PatchMapping("/{cardId}")
-    @Operation(summary = "Update card")
+    @Operation(summary = "Update Card")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN)
+    })
     public ResponseEntity<APIResponse.Success<?>> updateCard(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
@@ -64,8 +68,12 @@ public class CardController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PatchMapping(value = "{cardId}/frontImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Update front image")
+    @PostMapping(value = "/{cardId}/front-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update Front image", description = "Pass empty file to delete current file")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN)
+    })
     public ResponseEntity<APIResponse.Success<?>> updateFrontImage(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
@@ -76,8 +84,12 @@ public class CardController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PatchMapping(value = "{cardId}/frontAudio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Update front audio")
+    @PostMapping(value = "/{cardId}/front-audio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update Front audio", description = "Pass empty file to delete current file")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN)
+    })
     public ResponseEntity<APIResponse.Success<?>> updateFrontAudio(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
@@ -88,8 +100,12 @@ public class CardController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PatchMapping(value = "{cardId}/backImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Update back image")
+    @PostMapping(value = "/{cardId}/back-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update Back image", description = "Pass empty file to delete current file")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN)
+    })
     public ResponseEntity<APIResponse.Success<?>> updateBackImage(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
@@ -100,8 +116,12 @@ public class CardController {
         return ResponseEntity.ok(APIResponse.success());
     }
 
-    @PatchMapping(value = "{cardId}/backAudio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Update back audio")
+    @PostMapping(value = "/{cardId}/back-audio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update Back audio", description = "Pass empty file to delete current file")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN)
+    })
     public ResponseEntity<APIResponse.Success<?>> updateBackAudio(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,
@@ -114,6 +134,9 @@ public class CardController {
 
     @PostMapping("/{cardId}/review")
     @Operation(summary = "Set card study quality [0-5] to calculate next review date")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND)
+    })
     public ResponseEntity<APIResponse.Success<?>> reviewCard(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int cardId,

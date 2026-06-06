@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
 import vn.edu.ptithcm.mindcard.annotation.ApiErrors;
 import vn.edu.ptithcm.mindcard.dto.request.card.CardCreateBatchRequest;
@@ -34,7 +35,6 @@ import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 import vn.edu.ptithcm.mindcard.service.CardService;
 import vn.edu.ptithcm.mindcard.service.DeckService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/decks")
@@ -48,6 +48,7 @@ public class DeckController {
 
     @PostMapping("")
     @Operation(summary = "Create deck")
+    @ApiError(ErrorCode.RESOURCE_ALREADY_EXIST)
     public ResponseEntity<APIResponse.Success<?>> createDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody DeckCreateRequest body
@@ -68,6 +69,10 @@ public class DeckController {
 
     @GetMapping("/{deckId}")
     @Operation(summary = "Get Deck by id")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN)
+    })
     public ResponseEntity<APIResponse.Success<DeckSummaryResponse>> getDeckDetails(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int deckId
@@ -79,6 +84,11 @@ public class DeckController {
 
     @PatchMapping("/{deckId}")
     @Operation(summary = "Update Deck")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN),
+            @ApiError(ErrorCode.RESOURCE_ALREADY_EXIST)
+    })
     public ResponseEntity<APIResponse.Success<?>> updateDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody DeckUpdateRequest body,
@@ -95,8 +105,8 @@ public class DeckController {
     @DeleteMapping("/{deckId}")
     @Operation(summary = "Delete deck", description = "Soft deletes a deck owned by the user.")
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Deck not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "User is not the owner of the deck")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Deck not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "User is not the owner of the deck")
     })
     public ResponseEntity<APIResponse.Success<?>> deleteDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -109,9 +119,9 @@ public class DeckController {
     @PatchMapping("/{deckId}/visibility")
     @Operation(summary = "Update Deck visibility")
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Deck not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "Deck does not belong to the user"),
-        @ApiError(value = ErrorCode.VALIDATION_ERROR, description = "Invalid visibility value")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Deck not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "Deck does not belong to the user"),
+            @ApiError(value = ErrorCode.VALIDATION_ERROR, description = "Invalid visibility value")
     })
     public ResponseEntity<APIResponse.Success<?>> updateDeckVisibility(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -128,8 +138,8 @@ public class DeckController {
             description = "Retrieves a paginated list of cards for a specific deck. If the deck is private, only the owner can access it."
     )
     @ApiErrors({
-        @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Deck not found"),
-        @ApiError(value = ErrorCode.FORBIDDEN, description = "Deck is private and user is not the owner")
+            @ApiError(value = ErrorCode.RESOURCE_NOT_FOUND, description = "Deck not found"),
+            @ApiError(value = ErrorCode.FORBIDDEN, description = "Deck is private and user is not the owner")
     })
     public ResponseEntity<APIResponse.Paginated<CardResponse>> getCardsInDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -145,6 +155,11 @@ public class DeckController {
 
     @PostMapping("/{deckId}/save")
     @Operation(summary = "Save deck")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN),
+            @ApiError(ErrorCode.ACTION_ALREADY_PERFORMED)
+    })
     public ResponseEntity<APIResponse.Success<?>> saveDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int deckId
@@ -156,6 +171,11 @@ public class DeckController {
 
     @PostMapping("/{deckId}/rating")
     @Operation(summary = "Rating Deck (1-5 stars)")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN),
+            @ApiError(ErrorCode.ACTION_ALREADY_PERFORMED)
+    })
     public ResponseEntity<APIResponse.Success<?>> ratingDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody DeckRatingRequest body,
@@ -174,6 +194,10 @@ public class DeckController {
             summary = "Add cards to deck",
             description = "Request type: form data. To pass list of card: use keyword cards[index].{attribute_name} for each form value"
     )
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN)
+    })
     public ResponseEntity<APIResponse.Success<?>> addCardToDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @ModelAttribute CardCreateBatchRequest form,

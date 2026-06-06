@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
 import vn.edu.ptithcm.mindcard.annotation.ApiErrors;
 import vn.edu.ptithcm.mindcard.dto.request.deck.UpdateSavedDeckRequest;
@@ -32,7 +33,6 @@ import vn.edu.ptithcm.mindcard.exception.ErrorCode;
 import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 import vn.edu.ptithcm.mindcard.service.SavedDeckService;
 import vn.edu.ptithcm.mindcard.service.StudyService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/saved-decks")
@@ -152,6 +152,11 @@ public class SavedDeckController {
 
     @GetMapping("/{savedDeckId}/cards/batch")
     @Operation(summary = "Get card for study/review")
+    @ApiErrors({
+            @ApiError(ErrorCode.RESOURCE_NOT_FOUND),
+            @ApiError(ErrorCode.FORBIDDEN),
+            @ApiError(ErrorCode.VALIDATION_ERROR)
+    })
     public ResponseEntity<APIResponse.Success<List<CardResponse>>> getStudyQueue(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable int savedDeckId,
@@ -166,7 +171,6 @@ public class SavedDeckController {
         List<CardResponse> cards = (type.equals("new"))
                 ? studyService.getNewCardsBatch(userId, savedDeckId, limit)
                 : studyService.getDueCardBatch(userId, savedDeckId, limit);
-
 
         return ResponseEntity.ok(APIResponse.success(cards));
     }
