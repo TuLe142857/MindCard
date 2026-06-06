@@ -12,9 +12,8 @@ public class SpaceRepetitionImpl implements SpaceRepetitionAlgorithm {
 
     @Override
     public ScheduleResult calculate(double easinessFactor, int interval, int repetitions, int quality)
-            throws IllegalArgumentException
-    {
-        if (!(quality >= 0 && quality <= 5)){
+            throws IllegalArgumentException {
+        if (!(quality >= 0 && quality <= 5)) {
             throw new IllegalArgumentException("quality must in range [0, 5]");
         }
 
@@ -31,7 +30,7 @@ public class SpaceRepetitionImpl implements SpaceRepetitionAlgorithm {
                 .build();
     }
 
-    private boolean isSuccess(int quality){
+    private boolean isSuccess(int quality) {
         return quality >= 3;
     }
 

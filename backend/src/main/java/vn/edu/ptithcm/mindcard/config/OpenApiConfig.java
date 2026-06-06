@@ -10,18 +10,26 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
 import vn.edu.ptithcm.mindcard.exception.ErrorCode;
+import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 
 import java.util.*;
 import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
+    static {
+        SpringDocUtils.getConfig().addAnnotationsToIgnore(AuthenticationPrincipal.class);
+        SpringDocUtils.getConfig().addRequestWrapperToIgnore(UserPrincipal.class);
+    }
+
     @Bean
     public OpenAPI documentHubOpenAPI() {
         return new OpenAPI()
@@ -34,10 +42,10 @@ public class OpenApiConfig {
 
     @Bean
     @Order(1)
-    public OperationCustomizer apiErrorResponseCustomizer(){
+    public OperationCustomizer apiErrorResponseCustomizer() {
         return (operation, handlerMethod) -> {
             ApiError[] declaredErrors = handlerMethod.getMethod().getAnnotationsByType(ApiError.class);
-            if (declaredErrors.length == 0){
+            if (declaredErrors.length == 0) {
                 return operation;
             }
 
@@ -45,22 +53,22 @@ public class OpenApiConfig {
 
             ApiResponses responsesMap = Optional
                     .ofNullable(operation.getResponses())
-                    .orElseGet(()-> {
+                    .orElseGet(() -> {
                                 ApiResponses res = new ApiResponses();
                                 operation.setResponses(res);
                                 return res;
                             }
                     );
 
-            for (var entry: groupErrors.entrySet()){
+            for (var entry : groupErrors.entrySet()) {
                 String httpStatusStr = String.valueOf(entry.getKey());
                 List<ApiError> errors = entry.getValue();
 
-                ApiResponse response = responsesMap.computeIfAbsent(httpStatusStr, key -> createErrorResponse()) ;
+                ApiResponse response = responsesMap.computeIfAbsent(httpStatusStr, key -> createErrorResponse());
 
                 MediaType mediaType = response.getContent().get("application/json");
 
-                for (var error : errors){
+                for (var error : errors) {
                     Example example = buildExampleErrorResponse(error.value(), error.summary(), error.description());
                     mediaType.addExamples(error.value().getCode(), example);
                 }
@@ -71,16 +79,16 @@ public class OpenApiConfig {
 
     @Bean
     @Order(2)
-    public OperationCustomizer addSystemErrorResponse(){
+    public OperationCustomizer addSystemErrorResponse() {
         return (operation, handlerMethod) -> {
             ApiResponses responsesMap = Optional
                     .ofNullable(operation.getResponses())
-                    .orElseGet(()-> {
-                        ApiResponses res = new ApiResponses();
-                        operation.setResponses(res);
-                        return res;
-                    }
-            );
+                    .orElseGet(() -> {
+                                ApiResponses res = new ApiResponses();
+                                operation.setResponses(res);
+                                return res;
+                            }
+                    );
 
 
             ApiResponse response = responsesMap.computeIfAbsent(
@@ -91,9 +99,9 @@ public class OpenApiConfig {
             MediaType mediaType = response.getContent().get("application/json");
             Map<String, Example> examples = mediaType.getExamples();
 
-            if (examples != null && examples.containsKey(ErrorCode.SERVER_ERROR.getCode())){
+            if (examples != null && examples.containsKey(ErrorCode.SERVER_ERROR.getCode())) {
                 return operation;
-            }else{
+            } else {
                 Example example = buildExampleErrorResponse(
                         ErrorCode.SERVER_ERROR,
                         null,
@@ -102,20 +110,20 @@ public class OpenApiConfig {
                 mediaType.addExamples(ErrorCode.SERVER_ERROR.getCode(), example);
             }
             return operation;
-        } ;
+        };
     }
 
 
-    private static Map<Integer, List<ApiError>> groupErrorByStatus(ApiError[] errors){
+    private static Map<Integer, List<ApiError>> groupErrorByStatus(ApiError[] errors) {
         Map<Integer, List<ApiError>> groupErrors = new HashMap<>();
-        for (var error: errors){
+        for (var error : errors) {
             ErrorCode errorCode = error.value();
             groupErrors.computeIfAbsent(errorCode.getHttpStatusCode(), key -> new ArrayList<ApiError>()).add(error);
         }
         return groupErrors;
     }
 
-    private static ApiResponse createErrorResponse(){
+    private static ApiResponse createErrorResponse() {
         MediaType mediaType = new MediaType();
         Schema schema = new Schema<>().$ref(Components.COMPONENTS_SCHEMAS_REF + APIResponse.Error.SCHEMA_NAME);
         mediaType.setSchema(schema);
@@ -123,10 +131,10 @@ public class OpenApiConfig {
         return new ApiResponse().content(content);
     }
 
-    private static Example buildExampleErrorResponse(ErrorCode errorCode, String summary, String description){
+    private static Example buildExampleErrorResponse(ErrorCode errorCode, String summary, String description) {
         Example example = new Example();
 
-        example.setSummary((summary != null && !summary.isBlank()) ? summary  : errorCode.getCode());
+        example.setSummary((summary != null && !summary.isBlank()) ? summary : errorCode.getCode());
         example.setDescription(description != null ? description : "");
 
         Map<String, Object> errorBody = new HashMap<>();

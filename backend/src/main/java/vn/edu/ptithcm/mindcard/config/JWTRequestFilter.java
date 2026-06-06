@@ -7,7 +7,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,21 +23,23 @@ import vn.edu.ptithcm.mindcard.security.UserPrincipal;
 
 import java.io.IOException;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 
 @Component
+@RequiredArgsConstructor
 public class JWTRequestFilter extends OncePerRequestFilter {
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
+
     private static final List<String> PUBLIC_ROUTES = List.of(
             "/api/auth/**",
             "/v3/api-docs/**",
             "/swagger-ui/**"
     );
 
-    @Autowired
-    JwtService jwtService;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    private final JwtService jwtService;
 
     @Override
     protected void doFilterInternal(

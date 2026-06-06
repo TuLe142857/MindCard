@@ -17,9 +17,15 @@ import java.util.List;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
+@Schema(description = "Standard API Response Wrapper")
 public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResponse.Paginated, APIResponse.Error {
+    @Schema(description = "Indicates if the request was successful")
     private final boolean success;
+
+    @Schema(description = "Response message", nullable = true)
     private final String message;
+
+    @Schema(description = "Timestamp of the response in milliseconds")
     private final long timestamp = Instant.now().toEpochMilli();
 
     protected APIResponse(boolean success, String message) {
@@ -28,7 +34,9 @@ public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResp
     }
 
     @Getter
+    @Schema(description = "Successful API Response with data")
     public static final class Success<T> extends APIResponse<T>{
+        @Schema(description = "The payload data", nullable = true)
         private final T data;
 
         @Builder(access = AccessLevel.PRIVATE)
@@ -40,8 +48,12 @@ public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResp
     }
 
     @Getter
+    @Schema(description = "Successful API Response with paginated data")
     public static final class Paginated<T> extends APIResponse<T>{
+        @Schema(description = "List of data items for current page")
         private final List<T> data;
+
+        @Schema(description = "Pagination metadata")
         private final PaginationMeta meta;
 
         @Builder(access = AccessLevel.PRIVATE)
@@ -52,11 +64,15 @@ public abstract sealed class APIResponse<T> permits APIResponse.Success, APIResp
         }
     }
 
-    @Schema(name = Error.SCHEMA_NAME)
+    @Schema(name = Error.SCHEMA_NAME, description = "Error API Response")
     @Getter
     public static final class Error extends APIResponse<Void> {
         public static final String SCHEMA_NAME = "ResponseError";
+
+        @Schema(description = "Specific application error code")
         private final String errorCode;
+
+        @Schema(description = "Additional details about the error, like validation errors", nullable = true)
         private final Object errorDetails;
 
         @Builder(access = AccessLevel.PRIVATE)

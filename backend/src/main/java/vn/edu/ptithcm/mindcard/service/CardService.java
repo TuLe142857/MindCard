@@ -1,11 +1,8 @@
 package vn.edu.ptithcm.mindcard.service;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,41 +24,40 @@ import vn.edu.ptithcm.mindcard.repository.CardRepository;
 import vn.edu.ptithcm.mindcard.repository.CardVersionRepository;
 import vn.edu.ptithcm.mindcard.repository.DeckRepository;
 import vn.edu.ptithcm.mindcard.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CardService {
 
-    @Autowired
-    private CardRepository cardRepository;
+    private final CardRepository cardRepository;
 
-    @Autowired
-    private CardVersionRepository cardVersionRepository;
+    private final CardVersionRepository cardVersionRepository;
 
-    @Autowired
-    private DeckRepository deckRepository;
+    private final DeckRepository deckRepository;
 
-    @Autowired
-    private StorageService storageService;
+    private final StorageService storageService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     /**
      * Retrieves a paginated list of cards for a specific deck.
      * <ul>
-     * <li>If deck is {@code PRIVATE} only the {@code owner} of the deck is
+     *     <li>If deck is {@code PRIVATE} only the {@code owner} of the deck is
      * allowed to list its cards.</li>
-     * <li>If deck is {@code PUBLIC} anyone can list its cards</li>
+     *     <li>If deck is {@code PUBLIC} anyone can list its cards</li>
      * </ul>
      *
      * @param userId the ID of the user requesting the list.
      * @param deckId the ID of the deck.
      * @param pageable pagination and sorting information.
+     *
      * @return a page of cards mapped to {@link CardResponse} DTOs.
+     *
      * @throws AppException with the following {@link ErrorCode}s:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not allowed to access
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the deck is not found.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not allowed to access
      * this deck and its cards.</li>
      * </ul>
      */
@@ -97,36 +93,29 @@ public class CardService {
         });
     }
 
-    /**
-     * Upload file and return keys
-     *
-     * @param file -
-     * @param keyPrefix -
-     * @return -
-     * @throws AppException -
-     */
-    private String uploadFile(MultipartFile file, String keyPrefix) throws AppException {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-        String key = keyPrefix + UUID.randomUUID().toString();
-        try {
-            storageService.uploadFile(
-                    key,
-                    new BufferedInputStream(file.getInputStream()),
-                    file.getContentType(),
-                    file.getSize()
-            );
-        } catch (IOException ioException) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
-        }
-        return key;
-    }
 
+    /**
+     * Creates new cards in the specified deck.
+     *
+     * @param userId the ID of the requesting user.
+     * @param deckId the ID of the deck to add cards to.
+     * @param createRequests the list of card creation requests.
+     *
+     * @throws AppException if validation fails, specifically:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - deck not found</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck.</li>
+     * </ul>
+     */
     @Transactional
     public void createCards(int userId, int deckId, List<CardCreateRequest> createRequests) throws AppException {
-        Deck deck = deckRepository.getReferenceById(deckId);
-        User user = userRepository.getReferenceById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND, "User not found"));
+
+        Deck deck = deckRepository.findById(deckId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Deck not found"));
+
 
         if (!deck.getOwner().getId().equals(user.getId())) {
             throw new AppException(ErrorCode.FORBIDDEN);
@@ -134,10 +123,25 @@ public class CardService {
 
         for (CardCreateRequest request : createRequests) {
 
-            String frontImageKey = uploadFile(request.frontImage(), "img_");
-            String frontAudioKey = uploadFile(request.frontAudio(), "audio_");
-            String backImageKey = uploadFile(request.backImage(), "img_");
-            String backAudioKey = uploadFile(request.backAudio(), "audio_");
+            String frontImageKey = storageService.uploadMultipartFile(
+                    "img_" + UUID.randomUUID(),
+                    request.frontImage()
+            );
+
+            String frontAudioKey = storageService.uploadMultipartFile(
+                    "audio_" + UUID.randomUUID(),
+                    request.frontAudio()
+            );
+
+            String backImageKey = storageService.uploadMultipartFile(
+                    "img_" + UUID.randomUUID(),
+                    request.backImage()
+            );
+
+            String backAudioKey = storageService.uploadMultipartFile(
+                    "audio_" + UUID.randomUUID(),
+                    request.backAudio()
+            );
 
             CardContent frontContent = CardContent.builder()
                     .text(request.frontText())
@@ -175,17 +179,21 @@ public class CardService {
     /**
      * Retrieves a {@link Card} for modification (e.g., {@code UPDATE}, {@code DELETE})
      * and verifies that the requesting user is the owner of the card's deck.
+     * <br/>
+     * This method do not check whether {@code userId} exist or not.
      *
      * @param userId the ID of the user requesting the modification.
      * @param cardId the ID of the card to retrieve.
+     *
      * @return the requested {@link Card}.
+     *
      * @throws AppException if any validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
      * </ul>
      */
-    private Card getCardForUpdate(int userId, int cardId) throws AppException{
+    private Card getCardForUpdate(int userId, int cardId) throws AppException {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -195,6 +203,13 @@ public class CardService {
         return card;
     }
 
+    /**
+     * Create new card version by coppy from lastest version and increase version number.
+     *
+     * @param card card
+     *
+     * @return new card version
+     */
     private CardVersion createNewVersionFromLatest(Card card) {
         CardVersion latestVersion = card.getLatestVersion();
         CardContent oldFront = latestVersion.getFrontContent();
@@ -220,14 +235,37 @@ public class CardService {
                 .build();
     }
 
+    /**
+     * Save new cardversion and pin it to be the latest version.
+     *
+     * @param card card
+     * @param newVersion new card version
+     */
     private void saveNewVersion(Card card, CardVersion newVersion) {
         newVersion = cardVersionRepository.save(newVersion);
         card.setLatestVersion(newVersion);
         cardRepository.save(card);
     }
 
+    /**
+     * Update card
+     *
+     * @param userId userId
+     * @param cardId cardId
+     * @param updateRequest updateRequest
+     *
+     * @throws AppException with:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
+     * </ul>
+     */
     @Transactional
     public void update(int userId, int cardId, CardUpdateRequest updateRequest) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         Card card = getCardForUpdate(userId, cardId);
         CardVersion newVersion = createNewVersionFromLatest(card);
 
@@ -249,13 +287,11 @@ public class CardService {
      *
      * @param userId the ID of the requesting user.
      * @param cardId the ID of the card to delete.
+     *
      * @throws AppException if any validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - Bubbled up from
-     * {@link #getCardForUpdate(int, int)} if the card is not found.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - Bubbled up from
-     * {@link #getCardForUpdate(int, int)} if the card's deck does not belong to
-     * the user.</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
      * </ul>
      * @see #getCardForUpdate(int, int)
      */
@@ -266,37 +302,105 @@ public class CardService {
         cardRepository.save(card);
     }
 
+    /**
+     * Update front image of card. Create new card version
+     *
+     * @param userId userId
+     * @param cardId cardId
+     * @param file image file
+     *
+     * @throws AppException with:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
+     * </ul>
+     */
     @Transactional
-    public void updateFrontImage(int userId, int cardId, MultipartFile file) {
+    public void updateFrontImage(int userId, int cardId, MultipartFile file) throws AppException {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         Card card = getCardForUpdate(userId, cardId);
-        String key = uploadFile(file, "img_");
+        String key = storageService.uploadMultipartFile("img_" + UUID.randomUUID(), file);
         CardVersion newVersion = createNewVersionFromLatest(card);
         newVersion.getFrontContent().setImageKey(key);
         saveNewVersion(card, newVersion);
     }
 
+    /**
+     * Update front audio of card. Create new card version
+     *
+     * @param userId userId
+     * @param cardId cardId
+     * @param file audio file
+     *
+     * @throws AppException with:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
+     * </ul>
+     */
     @Transactional
-    public void updateFrontAudio(int userId, int cardId, MultipartFile file) {
+    public void updateFrontAudio(int userId, int cardId, MultipartFile file) throws AppException {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         Card card = getCardForUpdate(userId, cardId);
-        String key = uploadFile(file, "audio_");
+        String key = storageService.uploadMultipartFile("audio_" + UUID.randomUUID(), file);
         CardVersion newVersion = createNewVersionFromLatest(card);
         newVersion.getFrontContent().setAudioKey(key);
         saveNewVersion(card, newVersion);
     }
 
+    /**
+     * Update back image of card. Create new card version
+     *
+     * @param userId userId
+     * @param cardId cardId
+     * @param file image file
+     *
+     * @throws AppException with:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
+     * </ul>
+     */
     @Transactional
-    public void updateBackImage(int userId, int cardId, MultipartFile file) {
+    public void updateBackImage(int userId, int cardId, MultipartFile file) throws AppException {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         Card card = getCardForUpdate(userId, cardId);
-        String key = uploadFile(file, "img_");
+        String key = storageService.uploadMultipartFile("img_" + UUID.randomUUID(), file);
         CardVersion newVersion = createNewVersionFromLatest(card);
         newVersion.getBackContent().setImageKey(key);
         saveNewVersion(card, newVersion);
     }
 
+    /**
+     * Update back audio of card. Create new card version
+     *
+     * @param userId userId
+     * @param cardId cardId
+     * @param file audio file
+     *
+     * @throws AppException with:
+     * <ul>
+     *     <li>{@link ErrorCode#USER_NOT_FOUND}</li>
+     *     <li>{@link ErrorCode#RESOURCE_NOT_FOUND} - if the card is not found in the database.</li>
+     *     <li>{@link ErrorCode#FORBIDDEN} - if the user is not the owner of the deck containing the card.</li>
+     * </ul>
+     */
     @Transactional
-    public void updateBackAudio(int userId, int cardId, MultipartFile file) {
+    public void updateBackAudio(int userId, int cardId, MultipartFile file) throws AppException {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         Card card = getCardForUpdate(userId, cardId);
-        String key = uploadFile(file, "audio_");
+        String key = storageService.uploadMultipartFile("audio_" + UUID.randomUUID(), file);
         CardVersion newVersion = createNewVersionFromLatest(card);
         newVersion.getBackContent().setAudioKey(key);
         saveNewVersion(card, newVersion);

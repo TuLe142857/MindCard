@@ -19,6 +19,8 @@ To maintain high code quality without creating unnecessary maintenance overhead,
   - `@return`: Description of the return value (if not void).
   - `@throws`: A list of exceptions that might be thrown.
   - `{@link}`: References to related classes or methods if necessary.
+  - **HTML Tag Indentation:** When using HTML tags (e.g., `<ul>`, `<li>`) inside JavaDocs, indent them with 4 spaces for better readability.
+  - **Blank Lines:** Always include 1 blank line (`* `) to separate different groups of information (e.g., between the summary description, the `@param` block, the `@return` block, and the `@throws` block).
 
 # 2. Strict AppException Declaration (CRITICAL)
 - Even though `AppException` extends `RuntimeException` (making it an unchecked exception that Java does not force you to declare), it is the core mechanism for determining API error responses.
@@ -44,11 +46,12 @@ import com.yourproject.exception.ErrorCode;
 public class ActionValidator {
     /**
      * Validates if the user is allowed to perform the specific action.
-     * * @param param The input parameter to check.
+     * @param param The input parameter to check.
+     * 
      * @throws AppException with the following {@link ErrorCode}s:
      * <ul>
-     * <li>{@link ErrorCode#FORBIDDEN} - User does not have permission for this action.</li>
-     * <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED} - Action was already executed previously.</li>
+     *      <li>{@link ErrorCode#FORBIDDEN} - User does not have permission for this action.</li>
+     *      <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED} - Action was already executed previously.</li>
      * </ul>
      */
     public void validateAction(String param) throws AppException {
@@ -67,12 +70,14 @@ public class BusinessService {
      * Executes the core business logic after validating the parameters.
      *
      * @param param The input parameter for the business process.
+     * 
      * @throws AppException if any business validation fails, specifically:
      * <ul>
-     * <li>{@link ErrorCode#RESOURCE_ALREADY_EXISTS} - Thrown locally if the resource is a duplicate.</li>
-     * <li>{@link ErrorCode#FORBIDDEN} - Bubbled up from {@link ActionValidator#validateAction(String)}.</li>
-     * <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED} - Bubbled up from {@link ActionValidator#validateAction(String)}.</li>
+     *      <li>{@link ErrorCode#RESOURCE_ALREADY_EXISTS} - Thrown locally if the resource is a duplicate.</li>
+     *      <li>{@link ErrorCode#FORBIDDEN} - Bubbled up from {@link ActionValidator#validateAction(String)}.</li>
+     *      <li>{@link ErrorCode#ACTION_ALREADY_PERFORMED} - Bubbled up from {@link ActionValidator#validateAction(String)}.</li>
      * </ul>
+     * 
      * @see ActionValidator#validateAction(String)
      */
     public void executeProcess(String param) throws AppException {

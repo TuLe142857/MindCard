@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 
 public record UpdateSavedDeckRequest(
-        @Schema(description = "New name for the saved deck", nullable = true)
+        @Schema(description = "New name for the saved deck", nullable = true, minLength = 1, maxLength = 255)
         @Size(min = 1, max = 255, message = "Name must be between 1 and 255 characters")
         String name,
 
