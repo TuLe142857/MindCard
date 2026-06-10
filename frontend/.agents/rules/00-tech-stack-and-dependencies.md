@@ -30,6 +30,7 @@ trigger: always_on
 ### Forms & Validation
 - **React Hook Form (`react-hook-form`):** Use this for handling all form states instead of controlled React `useState`.
 - **Zod (`zod`):** Use for schema validation alongside React Hook Form.
+- **Hookform Resolvers (`@hookform/resolvers`):** Use as an adapter to connect Zod schemas with React Hook Form. Typical use cases include: validating user authentication forms (login/register), creating or updating resources, and ensuring complex nested form data matches the strict Zod schema before submission.
 
 ### Utilities
 - **Toast Notifications (`react-toastify`):** Use this to display success/error feedback to the user (e.g., after an API mutation). Do not build custom alert components.
