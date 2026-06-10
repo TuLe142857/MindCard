@@ -110,7 +110,10 @@ export const Library: React.FC = () => {
             <SavedDeckCard 
               key={deck.id} 
               deck={deck} 
-              onClick={() => navigate(`/deck/${deck.deckId}`)}
+              onClickDetails={() => navigate(`/deck/${deck.originalDeckId}`)}
+              onStudyNew={() => navigate(`/study/${deck.id}?type=new`)}
+              onStudyReview={() => navigate(`/study/${deck.id}?type=review`)}
+              onSyncUpdate={() => navigate(`/sync/${deck.id}`)}
             />
           ))}
         </div>
