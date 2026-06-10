@@ -1,5 +1,8 @@
 # MindCard
 
+> [!NOTE]  
+> Backend API document: [./backend/docs/API_DESC.md](./backend/docs/API_DESC.md)
+
 # Requirement:
 - JDK-25
 - Node-24

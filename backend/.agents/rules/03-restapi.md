@@ -75,3 +75,13 @@ public class HealthCheckController {
     }
 }
 ```
+
+# 5. API Documentation Maintenance
+- **For Frontend (Devs & Agents):** MUST read `backend/docs/API_DESC.md` for standard response/error formats and 
+`openapi.json` for detailed schema/parameters.
+- **For Backend (Devs & Agents):** Whenever modifying an API (input, output, structure, logic) or error codes:
+  1. **Update `API_DESC.md`:** Add/Modify the endpoint in the **API Summary** table (and **API Details** if complex).
+  2. **Update `openapi.json`:** The Agent MUST explicitly ask the User to start the server locally, visit Swagger UI, 
+and download/overwrite the latest `openapi.json` to keep the API contract synced.
+  3. **Update Error Codes:** Whenever adding or modifying an error code in `ErrorCode.java`, MUST update the ErrorCode 
+table in `backend/docs/API_DESC.md`.
