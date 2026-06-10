@@ -1,23 +1,13 @@
 import React from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
 import { LogOut, Search, User, Library, LayoutGrid } from 'lucide-react';
-import { useAppDispatch } from '../store/hooks';
-import { clearCredentials } from '../store/authSlice';
-import { apiClient } from '../shared/api/apiClient';
+import { useLogout } from '../features/auth/hooks/useAuth';
 
 export const MainLayout: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  const { mutate: logoutMutate } = useLogout();
 
-  const handleLogout = async () => {
-    try {
-      await apiClient.post('/api/auth/logout');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    } finally {
-      dispatch(clearCredentials());
-      navigate('/login');
-    }
+  const handleLogout = () => {
+    logoutMutate();
   };
 
   return (

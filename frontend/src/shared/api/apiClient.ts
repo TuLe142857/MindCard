@@ -27,12 +27,10 @@ const handleForcedLogout = () => {
   axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true }).catch(() => {});
 
   // Execute external state cleanup (Redux & React Query) via the registered callback
+  // This will automatically trigger ProtectedRoute to redirect to /login
   if (onForcedLogoutCallback) {
     onForcedLogoutCallback();
   }
-
-  // Redirect to login page
-  window.location.href = '/login';
 };
 
 export const apiClient = axios.create({
@@ -61,10 +59,37 @@ const processQueue = (error: AxiosError<ApiErrorResponse> | null) => {
   failedQueue = [];
 };
 
+const debug_api_success = (res) => {
+  console.group(
+    `Debug API: ${res.config?.method?.toUpperCase()} ${res.config.url}`
+  );
+  console.log('Request config:', res.config);
+  console.log('Response data:', res.data);
+  console.groupEnd();
+};
+
+const debug_api_error = (err) => {
+  console.group(
+    `Debug API ERROR: ${err.config?.method?.toUpperCase()} ${err.config.url}`
+  );
+  console.log('Request:', err.config);
+  console.log('Error response:', err.response?.data);
+  console.log('Error message:', err.message);
+  console.groupEnd();
+};
+
 // Response Interceptor
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (import.meta.env.DEV) {
+      debug_api_success(response);
+    }
+    return response;
+  },
   async (error: AxiosError<ApiErrorResponse>) => {
+    if (import.meta.env.DEV) {
+      debug_api_error(error);
+    }
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     if (error.response) {

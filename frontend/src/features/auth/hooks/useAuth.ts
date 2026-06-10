@@ -7,28 +7,19 @@ import {
   forgotPassword,
   resetPassword,
 } from '../api/authApi';
-import type { LoginRequest } from '../types';
-import type { User } from '@/features/users';
-import { useDispatch } from 'react-redux';
-import { setCredentials, clearCredentials } from '@/store/authSlice';
+import type { LoginRequest, RegisterOtpRequest, RegisterCompleteRequest, ForgotPasswordRequest, ResetPasswordRequest } from '../types';
+import { useAppDispatch } from '@/store/hooks';
+import { clearCredentials } from '@/store/authSlice';
 import { useNavigate } from 'react-router-dom';
 
 /**
  * Hook to handle user login.
- * Updates the Redux store with user data and redirects to the home page upon success.
- *
+ * 
  * @returns React Query mutation object for login.
  */
 export const useLogin = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
   return useMutation({
     mutationFn: (credentials: LoginRequest) => login(credentials),
-    onSuccess: (user: User) => {
-      dispatch(setCredentials({ user }));
-      navigate('/');
-    },
   });
 };
 
@@ -39,7 +30,7 @@ export const useLogin = () => {
  * @returns React Query mutation object for logout.
  */
 export const useLogout = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -51,7 +42,6 @@ export const useLogout = () => {
       navigate('/login');
     },
     onError: () => {
-      // Even if API logout fails, clear local session for security
       dispatch(clearCredentials());
       queryClient.clear();
       navigate('/login');
@@ -66,7 +56,7 @@ export const useLogout = () => {
  */
 export const useRegisterRequest = () => {
   return useMutation({
-    mutationFn: registerRequest,
+    mutationFn: (data: RegisterOtpRequest) => registerRequest(data),
   });
 };
 
@@ -77,7 +67,7 @@ export const useRegisterRequest = () => {
  */
 export const useRegisterComplete = () => {
   return useMutation({
-    mutationFn: registerComplete,
+    mutationFn: (data: RegisterCompleteRequest) => registerComplete(data),
   });
 };
 
@@ -88,7 +78,7 @@ export const useRegisterComplete = () => {
  */
 export const useForgotPassword = () => {
   return useMutation({
-    mutationFn: forgotPassword,
+    mutationFn: (data: ForgotPasswordRequest) => forgotPassword(data),
   });
 };
 
@@ -99,6 +89,6 @@ export const useForgotPassword = () => {
  */
 export const useResetPassword = () => {
   return useMutation({
-    mutationFn: resetPassword,
+    mutationFn: (data: ResetPasswordRequest) => resetPassword(data),
   });
 };

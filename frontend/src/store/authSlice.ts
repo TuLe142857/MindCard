@@ -17,7 +17,7 @@ const initialState: AuthState = {
 
 export const fetchAuth = createAsyncThunk('auth/fetchAuth', async (_, { rejectWithValue }) => {
   try {
-    const response = await apiClient.get<ApiSuccessResponse<User>>('/api/users/me');
+    const response = await apiClient.get<ApiSuccessResponse<User>>('/users/me');
     return response.data.data;
   } catch (error) {
     return rejectWithValue('Not authenticated');
