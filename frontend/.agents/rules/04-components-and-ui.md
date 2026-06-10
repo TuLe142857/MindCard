@@ -54,3 +54,23 @@ export const Button = ({ variant = 'primary', className, ...props }: ButtonProps
     />
   );
 };
+
+## 4. UI Design & Theme Guidelines
+To maintain a consistent and premium user experience, adhere to the following design conventions across all UI elements:
+
+- **Color Palette (Dark Theme Focus):**
+  - **Backgrounds:** Use `slate` as the primary neutral. Typical backgrounds use `bg-slate-950` for the app body, `bg-slate-900` for cards/panels, and `bg-slate-800` for borders/dividers.
+  - **Text:** Use `text-slate-100` or `200` for primary headings, `text-slate-400` or `500` for secondary text/descriptions.
+  - **Accents:** Use `blue-500` or `blue-600` as the primary brand/action color.
+  - **Semantic Colors:** `green-400/500` for success or "Answer" side of cards, `red-400/500` for error states/delete actions, `yellow-500` for ratings.
+
+- **Glassmorphism & Premium Depth:**
+  - Utilize translucent backgrounds with blurs for overlays/modals (e.g., `bg-slate-950/80 backdrop-blur-sm`).
+  - Create glowing effects for primary buttons or decorative elements using shadows (`shadow-[0_0_15px_rgba(37,99,235,0.3)]`) or absolute blurred circles.
+  - Always use subtle borders to define shapes in dark mode (`border border-slate-800`).
+
+- **Interactions & Animations:**
+  - Elements should feel responsive. Use `transition-colors`, `hover:bg-slate-800`, or hover ring effects on interactive items.
+  - Use simple intro animations for Modals and Cards (e.g., `animate-in fade-in zoom-in-95`).
+
+- **Icons:** Use **Lucide React** (`lucide-react`) for all UI icons. Keep stroke width and sizes consistent (typically `size={16}` or `size={20}`).
