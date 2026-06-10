@@ -41,8 +41,8 @@
   "meta": {
     "currentPage": "int, >= 1",
     "pageSize": "int, >= 1",
-    "totalItem": "long, >= 0",
-    "totalPage": "long, >= 0",
+    "totalItems": "long, >= 0",
+    "totalPages": "long, >= 0",
     "hasNext": "boolean",
     "hasPrev": "boolean"
   },
