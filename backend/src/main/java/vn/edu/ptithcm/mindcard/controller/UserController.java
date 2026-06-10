@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
@@ -72,7 +73,7 @@ public class UserController {
     @Operation(summary = "Get current user's decks")
     public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> getSelfDecks(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Valid @ModelAttribute DeckQueryRequest query
+            @Valid @ParameterObject @ModelAttribute DeckQueryRequest query
     ) {
 
         Page<DeckSummaryResponse> response = deckService.getUserDecks(userPrincipal.getId(), query);
@@ -83,7 +84,7 @@ public class UserController {
     @Operation(summary = "Get current user's saved decks")
     public ResponseEntity<APIResponse.Paginated<SavedDeckResponse>> getSavedDeck(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Valid @ModelAttribute SavedDeckQueryRequest query
+            @Valid @ParameterObject @ModelAttribute SavedDeckQueryRequest query
     ) {
         int userId = userPrincipal.getId();
         Page<SavedDeckResponse> res = savedDeckService.listSavedDecks(userId, query);
@@ -105,7 +106,7 @@ public class UserController {
     @ApiError(value = ErrorCode.USER_NOT_FOUND, description = "User not found")
     public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> getUserDecks(
             @PathVariable String username,
-            @Valid @ModelAttribute PublicDeckQueryRequest query
+            @Valid @ParameterObject @ModelAttribute PublicDeckQueryRequest query
     ) {
         Page<DeckSummaryResponse> response = deckService.getPublicDecksByUsername(username, query);
         return ResponseEntity.ok(APIResponse.paginated(response));

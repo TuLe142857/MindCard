@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import vn.edu.ptithcm.mindcard.annotation.ApiError;
@@ -61,7 +62,7 @@ public class DeckController {
     @GetMapping("")
     @Operation(summary = "Search Public Deck")
     public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> searchDeck(
-            @Valid @ModelAttribute PublicDeckQueryRequest query
+            @Valid @ParameterObject @ModelAttribute PublicDeckQueryRequest query
     ) {
         Page<DeckSummaryResponse> decks = deckService.searchPublicDecks(query);
         return ResponseEntity.ok(APIResponse.paginated(decks));
