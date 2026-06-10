@@ -50,3 +50,9 @@ export interface ApiPaginatedResponse<T> extends BaseResponse {
     hasPrev: boolean;
   };
 }
+
+export interface ApiPaginatedQuery {
+  page?: number;
+  limit?: number;
+  sortBy?: string[];
+}
