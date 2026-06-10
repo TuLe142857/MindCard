@@ -32,5 +32,5 @@ trigger: always_on
 - **Zod (`zod`):** Use for schema validation alongside React Hook Form.
 
 ### Utilities
-- **Toast Notifications (`react-hot-toast` or `sonner`):** Use this to display success/error feedback to the user (e.g., after an API mutation). Do not build custom alert components.
+- **Toast Notifications (`react-toastify`):** Use this to display success/error feedback to the user (e.g., after an API mutation). Do not build custom alert components.
 - **Tailwind Merge / CLSX:** Use utility functions (usually named `cn`) to dynamically merge Tailwind classes without conflicts.
