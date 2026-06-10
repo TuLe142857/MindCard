@@ -15,10 +15,6 @@ Follow this standard directory structure inside the `src/` folder:
 ```text
 src/
 ├── assets/            # Static files (images, global CSS, etc.)
-├── components/        # Reusable global UI components (Button, Input, Modal, etc.)
-├── hooks/             # Generic React hooks (useDebounce, useWindowSize, etc.)
-├── utils/             # Helper functions (date formatters, string manipulators)
-├── types/             # Global TypeScript interfaces
 ├── features/          # Feature domains (Core business logic)
 │   ├── auth/          # Example: Authentication feature
 │   │   ├── api/       # Axios API calls specific to auth
@@ -30,6 +26,11 @@ src/
 │       ├── components/# DocumentCard, DocumentList, etc.
 │       ├── hooks/     # useDocuments, useUploadDocument (React Query)
 │       └── types/     # Document model definitions based on 
+├── shared/            # Shared packages and utilities used across the app
+│   ├── components/    # Reusable global UI components (Button, Input, Modal, etc.)
+│   ├── hooks/         # Generic React hooks (useDebounce, useWindowSize, etc.)
+│   ├── utils/         # Helper functions (date formatters, string manipulators)
+│   └── types/         # Global TypeScript interfaces
 ├── layouts/           # Page layouts (MainLayout, AuthLayout)
 ├── pages/             # Route components (Smart components that compose features)
 ├── store/             # Global Redux store configuration and global slices (e.g., userSlice)
