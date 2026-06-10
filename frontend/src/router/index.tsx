@@ -5,16 +5,17 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
 
 // Auth Pages
-import { Login } from '../pages/auth/Login';
-import { Register } from '../pages/auth/Register';
-import { ForgotPassword } from '../pages/auth/ForgotPassword';
-import { ResetPassword } from '../pages/auth/ResetPassword';
+import { Login } from '@/pages/auth/Login';
+import { Register } from '@/pages/auth/Register';
+import { ForgotPassword } from '@/pages/auth/ForgotPassword';
+import { ResetPassword } from '@/pages/auth/ResetPassword';
 
 // Main Pages
-import { Explore } from '../pages/main/Explore';
-import { Library } from '../pages/main/Library';
-import { MyDecks } from '../pages/main/MyDecks';
-import { Profile } from '../pages/main/Profile';
+import { Explore } from '@/pages/main/Explore';
+import { Library } from '@/pages/main/Library';
+import { MyDecks } from '@/pages/main/MyDecks';
+import { Profile } from '@/pages/main/Profile';
+import { DeckDetails } from '@/pages/main/DeckDetails';
 
 // Generic
 import { NotFound } from '../pages/NotFound';
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
           { path: '/library', element: <Library /> },
           { path: '/my-decks', element: <MyDecks /> },
           { path: '/profile', element: <Profile /> },
+          { path: '/deck/:deckId', element: <DeckDetails /> },
         ],
       },
     ],
