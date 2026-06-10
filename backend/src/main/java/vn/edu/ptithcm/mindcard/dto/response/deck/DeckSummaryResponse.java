@@ -30,7 +30,11 @@ public record DeckSummaryResponse(
         @Schema(description = "Average rating score")
         double avgRating,
         @Schema(description = "Creation timestamp")
-        Instant createdAt
+        Instant createdAt,
+        @Schema(description = "Indicates if the authenticated user has saved this deck")
+        Boolean isSaved,
+        @Schema(description = "The rating given by the authenticated user (null if not rated)")
+        Integer userRating
         ) {
 
 }

@@ -112,6 +112,8 @@ export interface DeckSummary {
   avgRating: number;
   /** Creation timestamp */
   createdAt: string;
+  isSaved?: boolean;
+  userRating?: number | null;
 }
 
 /**

@@ -105,10 +105,11 @@ public class UserController {
     @Operation(summary = "Get a user's public decks by username")
     @ApiError(value = ErrorCode.USER_NOT_FOUND, description = "User not found")
     public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> getUserDecks(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable String username,
             @Valid @ParameterObject @ModelAttribute PublicDeckQueryRequest query
     ) {
-        Page<DeckSummaryResponse> response = deckService.getPublicDecksByUsername(username, query);
+        Page<DeckSummaryResponse> response = deckService.getPublicDecksByUsername(userPrincipal.getId(), username, query);
         return ResponseEntity.ok(APIResponse.paginated(response));
     }
 }

@@ -99,20 +99,7 @@ public class DeckService {
             throw new AppException(ErrorCode.FORBIDDEN, "Deck is private");
         }
 
-        return DeckSummaryResponse.builder()
-                .id(deck.getId())
-                .name(deck.getName())
-                .owner(deck.getOwner().getUsername())
-                .description(deck.getDescription())
-                .topic(deck.getTopic().getName())
-                .visibility(deck.getVisibility())
-                .totalCard(deck.getCards().size())
-                .savedCount(deck.getSavedCount())
-                .ratingCount(deck.getRatingCount())
-                .avgRating(deck.getAvgRating())
-                .createdAt(deck.getCreatedAt())
-                .build();
-
+        return mapToDeckSummaryResponse(deck, userId);
     }
 
     /**
@@ -354,26 +341,14 @@ public class DeckService {
      *
      * @return a page of public decks mapped to {@link DeckSummaryResponse} DTOs
      */
-    public Page<DeckSummaryResponse> searchPublicDecks(PublicDeckQueryRequest queryRequest) {
+    public Page<DeckSummaryResponse> searchPublicDecks(int userId, PublicDeckQueryRequest queryRequest) {
         Specification<Deck> spec = Specification.where(DeckSpecification.isDeleted(false))
                 .and(DeckSpecification.hasVisibility(Deck.DeckVisibility.PUBLIC))
                 .and(DeckSpecification.hasKeyword(queryRequest.keyword()))
                 .and(DeckSpecification.hasTopicId(queryRequest.topicId()));
 
         Page<Deck> decks = deckRepository.findAll(spec, queryRequest.toPageable());
-        return decks.map(deck -> DeckSummaryResponse.builder()
-                .id(deck.getId())
-                .name(deck.getName())
-                .owner(deck.getOwner().getUsername())
-                .topic(deck.getTopic().getName())
-                .visibility(deck.getVisibility())
-                .description(deck.getDescription())
-                .totalCard(deck.getCards().size())
-                .savedCount(deck.getSavedCount())
-                .ratingCount(deck.getRatingCount())
-                .avgRating(deck.getAvgRating())
-                .createdAt(deck.getCreatedAt())
-                .build());
+        return decks.map(deck -> mapToDeckSummaryResponse(deck, userId));
     }
 
     /**
@@ -402,19 +377,7 @@ public class DeckService {
                 .and(DeckSpecification.hasVisibility(query.visibility()));
 
         Page<Deck> decks = deckRepository.findAll(spec, query.toPageable());
-        return decks.map(deck -> DeckSummaryResponse.builder()
-                .id(deck.getId())
-                .name(deck.getName())
-                .owner(deck.getOwner().getUsername())
-                .topic(deck.getTopic().getName())
-                .visibility(deck.getVisibility())
-                .description(deck.getDescription())
-                .totalCard(deck.getCards().size())
-                .savedCount(deck.getSavedCount())
-                .ratingCount(deck.getRatingCount())
-                .avgRating(deck.getAvgRating())
-                .createdAt(deck.getCreatedAt())
-                .build());
+        return decks.map(deck -> mapToDeckSummaryResponse(deck, userId));
     }
 
     /**
@@ -432,7 +395,7 @@ public class DeckService {
      * username is not found.</li>
      * </ul>
      */
-    public Page<DeckSummaryResponse> getPublicDecksByUsername(String username, PublicDeckQueryRequest query) throws AppException {
+    public Page<DeckSummaryResponse> getPublicDecksByUsername(int userId, String username, PublicDeckQueryRequest query) throws AppException {
         userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
@@ -442,7 +405,16 @@ public class DeckService {
                 .and(DeckSpecification.hasKeyword(query.keyword()))
                 .and(DeckSpecification.hasTopicId(query.topicId()));
         Page<Deck> decks = deckRepository.findAll(spec, query.toPageable());
-        return decks.map(deck -> DeckSummaryResponse.builder()
+        return decks.map(deck -> mapToDeckSummaryResponse(deck, userId));
+    }
+
+    private DeckSummaryResponse mapToDeckSummaryResponse(Deck deck, int userId) {
+        boolean isSaved = savedDeckRepository.findByUserIdAndDeckId(userId, deck.getId()).isPresent();
+        Integer userRating = deckRatingRepository.findByDeckIdAndUserId(deck.getId(), userId)
+                .map(DeckRating::getRating)
+                .orElse(null);
+
+        return DeckSummaryResponse.builder()
                 .id(deck.getId())
                 .name(deck.getName())
                 .owner(deck.getOwner().getUsername())
@@ -454,7 +426,9 @@ public class DeckService {
                 .ratingCount(deck.getRatingCount())
                 .avgRating(deck.getAvgRating())
                 .createdAt(deck.getCreatedAt())
-                .build());
+                .isSaved(isSaved)
+                .userRating(userRating)
+                .build();
     }
 
 }

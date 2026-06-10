@@ -62,9 +62,10 @@ public class DeckController {
     @GetMapping("")
     @Operation(summary = "Search Public Deck")
     public ResponseEntity<APIResponse.Paginated<DeckSummaryResponse>> searchDeck(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @ParameterObject @ModelAttribute PublicDeckQueryRequest query
     ) {
-        Page<DeckSummaryResponse> decks = deckService.searchPublicDecks(query);
+        Page<DeckSummaryResponse> decks = deckService.searchPublicDecks(userPrincipal.getId(), query);
         return ResponseEntity.ok(APIResponse.paginated(decks));
     }
 
