@@ -1,15 +1,28 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { apiClient } from '@/shared/api/apiClient';
 import type { User } from '@/features/users';
+import type { ApiSuccessResponse } from '@/shared/types/api';
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
+  isInitialized: false,
 };
+
+export const fetchAuth = createAsyncThunk('auth/fetchAuth', async (_, { rejectWithValue }) => {
+  try {
+    const response = await apiClient.get<ApiSuccessResponse<User>>('/api/users/me');
+    return response.data.data;
+  } catch (error) {
+    return rejectWithValue('Not authenticated');
+  }
+});
 
 const authSlice = createSlice({
   name: 'auth',
@@ -23,6 +36,24 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchAuth.pending, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isInitialized = false;
+      })
+      .addCase(fetchAuth.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.isInitialized = true;
+      })
+      .addCase(fetchAuth.rejected, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isInitialized = true;
+      });
   },
 });
 

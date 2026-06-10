@@ -1,5 +1,4 @@
 import { apiClient } from '@/shared/api/apiClient';
-import type { ApiSuccessResponse } from '@/shared/types/api';
 import type {
   LoginRequest,
   RegisterOtpRequest,
@@ -7,21 +6,16 @@ import type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
 } from '../types';
-import type { User } from '@/features/users';
 
 /**
- * Authenticates the user and retrieves their profile.
+ * Authenticates the user.
  * Tokens are set automatically via http-only cookies by the server.
  *
  * @param credentials - The user's login credentials.
- * @returns A promise resolving to the authenticated User profile.
+ * @returns A promise that resolves when login is successful.
  */
-export const login = async (credentials: LoginRequest): Promise<User> => {
+export const login = async (credentials: LoginRequest): Promise<void> => {
   await apiClient.post('/auth/login', credentials);
-
-  // Fetch the user profile explicitly after a successful login
-  const meResponse = await apiClient.get<ApiSuccessResponse<User>>('/users/me');
-  return meResponse.data.data;
 };
 
 /**
