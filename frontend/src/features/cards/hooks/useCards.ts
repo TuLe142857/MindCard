@@ -1,16 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateCard, deleteCard, reviewCard, updateCardMedia } from '../api/cardsApi';
-import { deckKeys } from '@/features/decks/hooks/useDecks';
+import { deckKeys } from '@/features/decks';
 import type { CardUpdateRequest, CardReviewRequest, CardMediaSlot } from '../types';
-
-/**
- * Factory for React Query keys related to cards.
- * Centralizes key generation for consistent caching and invalidation.
- */
-export const cardKeys = {
-  all: ['cards'] as const,
-  detail: (id: number) => [...cardKeys.all, id] as const,
-};
 
 /**
  * Hook to update a card's text content and/or type.

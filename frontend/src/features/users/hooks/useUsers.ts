@@ -8,6 +8,7 @@ import {
   getUserDecks,
 } from '../api/usersApi';
 import type { DeckQueryRequest, SavedDeckQueryRequest } from '../types';
+import { userKeys } from './queryKeys';
 
 /**
  * Hook to fetch the current user's private profile.
@@ -16,7 +17,7 @@ import type { DeckQueryRequest, SavedDeckQueryRequest } from '../types';
  */
 export const useGetSelfProfile = () => {
   return useQuery({
-    queryKey: ['users', 'me'],
+    queryKey: userKeys.me(),
     queryFn: getSelfProfile,
   });
 };
@@ -33,7 +34,7 @@ export const useUpdateAvatar = () => {
     mutationFn: (file: File) => updateAvatar(file),
     onSuccess: () => {
       // Invalidate both 'me' profile and the globally cached user data if needed
-      queryClient.invalidateQueries({ queryKey: ['users', 'me'] });
+      queryClient.invalidateQueries({ queryKey: userKeys.me() });
     },
   });
 };
@@ -46,7 +47,7 @@ export const useUpdateAvatar = () => {
  */
 export const useGetSelfDecks = (params?: DeckQueryRequest) => {
   return useQuery({
-    queryKey: ['users', 'me', 'decks', params],
+    queryKey: userKeys.myDecks(params),
     queryFn: () => getSelfDecks(params),
   });
 };
@@ -59,7 +60,7 @@ export const useGetSelfDecks = (params?: DeckQueryRequest) => {
  */
 export const useGetSavedDecks = (params?: SavedDeckQueryRequest) => {
   return useQuery({
-    queryKey: ['users', 'me', 'saved-decks', params],
+    queryKey: userKeys.mySavedDecks(params),
     queryFn: () => getSavedDecks(params),
   });
 };
@@ -72,7 +73,7 @@ export const useGetSavedDecks = (params?: SavedDeckQueryRequest) => {
  */
 export const useGetUserProfile = (username: string) => {
   return useQuery({
-    queryKey: ['users', username],
+    queryKey: userKeys.profile(username),
     queryFn: () => getUserProfile(username),
     enabled: !!username,
   });
@@ -87,7 +88,7 @@ export const useGetUserProfile = (username: string) => {
  */
 export const useGetUserDecks = (username: string, params?: DeckQueryRequest) => {
   return useQuery({
-    queryKey: ['users', username, 'decks', params],
+    queryKey: userKeys.userDecks(username, params),
     queryFn: () => getUserDecks(username, params),
     enabled: !!username,
   });

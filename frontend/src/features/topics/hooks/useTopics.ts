@@ -1,12 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getTopics } from '../api/topicsApi';
 
-/**
- * Factory for React Query keys related to topics.
- */
-export const topicKeys = {
-  all: ['topics'] as const,
-};
+import { topicKeys } from './queryKeys';
 
 /**
  * Hook to fetch all topics supported by the system.

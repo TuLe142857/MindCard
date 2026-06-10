@@ -8,25 +8,9 @@ import {
   syncPartialCards,
   getStudyQueue,
 } from '../api/savedDecksApi';
-import type {
-  UpdateSavedDeckRequest,
-  SyncCardsRequest,
-  StudyQueueParams,
-} from '../types';
+import type { UpdateSavedDeckRequest, SyncCardsRequest, StudyQueueParams } from '../types';
 
-/**
- * Factory for React Query keys related to saved decks.
- * Centralizes key generation for consistent caching and invalidation.
- */
-export const savedDeckKeys = {
-  all: ['saved-decks'] as const,
-  detail: (id: number) => [...savedDeckKeys.all, id] as const,
-  syncSummary: (id: number) => [...savedDeckKeys.detail(id), 'sync-summary'] as const,
-  syncDetails: (id: number, params?: { page?: number; limit?: number }) =>
-    [...savedDeckKeys.detail(id), 'sync-details', params] as const,
-  studyQueue: (id: number, params?: StudyQueueParams) =>
-    [...savedDeckKeys.detail(id), 'study-queue', params] as const,
-};
+import { savedDeckKeys } from './queryKeys';
 
 /**
  * Hook to fetch the summary and study progress of a saved deck.
@@ -51,13 +35,8 @@ export const useSavedDeckSummary = (savedDeckId: number) => {
 export const useUpdateSavedDeck = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      savedDeckId,
-      data,
-    }: {
-      savedDeckId: number;
-      data: UpdateSavedDeckRequest;
-    }) => updateSavedDeck(savedDeckId, data),
+    mutationFn: ({ savedDeckId, data }: { savedDeckId: number; data: UpdateSavedDeckRequest }) =>
+      updateSavedDeck(savedDeckId, data),
     onSuccess: (_, { savedDeckId }) => {
       queryClient.invalidateQueries({ queryKey: savedDeckKeys.detail(savedDeckId) });
     },
@@ -86,10 +65,7 @@ export const useSyncSummary = (savedDeckId: number) => {
  * @param params - Pagination parameters (page, limit).
  * @returns React Query object containing the paginated card diffs.
  */
-export const useSyncDetails = (
-  savedDeckId: number,
-  params?: { page?: number; limit?: number }
-) => {
+export const useSyncDetails = (savedDeckId: number, params?: { page?: number; limit?: number }) => {
   return useQuery({
     queryKey: savedDeckKeys.syncDetails(savedDeckId, params),
     queryFn: () => getSyncDetails(savedDeckId, params),
@@ -125,13 +101,8 @@ export const useSyncAllCards = () => {
 export const useSyncPartialCards = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      savedDeckId,
-      data,
-    }: {
-      savedDeckId: number;
-      data: SyncCardsRequest;
-    }) => syncPartialCards(savedDeckId, data),
+    mutationFn: ({ savedDeckId, data }: { savedDeckId: number; data: SyncCardsRequest }) =>
+      syncPartialCards(savedDeckId, data),
     onSuccess: (_, { savedDeckId }) => {
       queryClient.invalidateQueries({ queryKey: savedDeckKeys.detail(savedDeckId) });
       queryClient.invalidateQueries({ queryKey: savedDeckKeys.syncSummary(savedDeckId) });
