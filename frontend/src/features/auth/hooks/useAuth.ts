@@ -7,7 +7,8 @@ import {
   forgotPassword,
   resetPassword,
 } from '../api/authApi';
-import type { LoginRequest, User } from '../types';
+import type { LoginRequest } from '../types';
+import type { User } from '@/features/users';
 import { useDispatch } from 'react-redux';
 import { setCredentials, clearCredentials } from '@/store/authSlice';
 import { useNavigate } from 'react-router-dom';

@@ -1,4 +1,5 @@
-import type { DeckQueryRequest, SavedDeckQueryRequest } from '../types';
+import type { DeckQueryRequest } from '@/features/decks';
+import type { SavedDeckQueryRequest } from '@/features/saved-decks';
 
 /**
  * Factory for React Query keys related to users.

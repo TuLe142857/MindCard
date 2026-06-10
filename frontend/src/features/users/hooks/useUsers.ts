@@ -7,7 +7,8 @@ import {
   getUserProfile,
   getUserDecks,
 } from '../api/usersApi';
-import type { DeckQueryRequest, SavedDeckQueryRequest } from '../types';
+import type { DeckQueryRequest } from '@/features/decks';
+import type { SavedDeckQueryRequest } from '@/features/saved-decks';
 import { userKeys } from './queryKeys';
 
 /**

@@ -1,13 +1,9 @@
 import { apiClient } from '@/shared/api/apiClient';
 import type { ApiSuccessResponse, ApiPaginatedResponse } from '@/shared/types/api';
-import type { User } from '@/features/auth/types';
-import type {
-  UserPublicProfile,
-  DeckSummary,
-  SavedDeckSummary,
-  DeckQueryRequest,
-  SavedDeckQueryRequest,
-} from '../types';
+import type { User } from '../types';
+import type { UserPublicProfile } from '../types';
+import type { DeckSummary, DeckQueryRequest } from '@/features/decks';
+import type { SavedDeckSummary, SavedDeckQueryRequest } from '@/features/saved-decks';
 
 /**
  * Fetches the private profile of the currently authenticated user.

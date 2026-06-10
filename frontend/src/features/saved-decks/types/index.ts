@@ -1,10 +1,46 @@
-import type { SavedDeckSummary } from '@/features/users/types';
+import type { ApiPaginatedQuery } from '@/shared/types/api';
 
 /**
- * Re-export SavedDeckSummary from users feature.
- * This type is used both in user profile pages and saved deck detail pages.
+ * Summary information of a Saved Deck.
  */
-export type { SavedDeckSummary };
+export interface SavedDeckSummary {
+  /** Unique ID of the saved deck record */
+  id: number;
+  /** ID of the original public deck */
+  originalDeckId: number;
+  /** Original name of the deck */
+  originalDeckName: string;
+  /** Custom name set by the learner, or original name if not set */
+  name: string;
+  /** Username of the deck creator */
+  creator: string;
+  /** Topic name of the deck */
+  topic: string;
+  /** Custom description set by the learner, or original if not set */
+  description: string;
+  /** Total number of flashcards in the deck */
+  totalCards: number;
+  /** Number of new cards to learn */
+  newCards: number;
+  /** Number of cards currently in learning phase */
+  learningCards: number;
+  /** Number of cards that need to be reviewed */
+  reviewCards: number;
+  /** Total number of due cards (new + learning + review) */
+  dueCards: number;
+  /** Whether the original deck has been updated since last sync */
+  hasUpdate: boolean;
+  /** Whether the original deck is still active/public */
+  isOriginalDeckActive: boolean;
+}
+
+/**
+ * Query parameters for fetching saved decks.
+ */
+export interface SavedDeckQueryRequest extends ApiPaginatedQuery {
+  /** Filter by custom name */
+  keyword?: string;
+}
 
 /**
  * Detailed response of a Saved Deck (same structure as SavedDeckSummary).

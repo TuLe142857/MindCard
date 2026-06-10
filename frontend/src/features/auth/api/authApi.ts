@@ -2,12 +2,12 @@ import { apiClient } from '@/shared/api/apiClient';
 import type { ApiSuccessResponse } from '@/shared/types/api';
 import type {
   LoginRequest,
-  User,
   RegisterOtpRequest,
   RegisterCompleteRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
 } from '../types';
+import type { User } from '@/features/users';
 
 /**
  * Authenticates the user and retrieves their profile.

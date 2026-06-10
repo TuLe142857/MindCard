@@ -1,3 +1,5 @@
+import type { ApiPaginatedQuery } from '@/shared/types/api';
+
 /**
  * Request payload for creating a new Deck.
  */
@@ -85,9 +87,40 @@ export interface Card {
   back: CardSide;
 }
 
-import type { DeckSummary, DeckQueryRequest } from '@/features/users/types';
+/**
+ * Summary information of a Deck.
+ */
+export interface DeckSummary {
+  /** Unique ID of the deck */
+  id: number;
+  /** Name of the deck */
+  name: string;
+  /** owner's username*/
+  owner: string;
+  /** topic name */
+  topic: string;
+  /** Short description */
+  description?: string | null;
+  /** Visibility status */
+  visibility: 'PUBLIC' | 'PRIVATE';
+  /** Total number of flashcards */
+  totalCard: number;
+  savedCount: number;
+  ratingCount: number;
+  avgRating: number;
+  /** Creation timestamp */
+  createdAt: string;
+}
 
-export type { DeckSummary, DeckQueryRequest };
+/**
+ * Query parameters for fetching decks.
+ */
+export interface DeckQueryRequest extends ApiPaginatedQuery {
+  /** Filter by keyword in title/description */
+  keyword?: string;
+  /** Filter by a specific topic */
+  topicId?: number;
+}
 
 /**
  * Detailed information of a Deck.
