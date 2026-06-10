@@ -1,5 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { login, logout } from '../api/authApi';
+import {
+  login,
+  logout,
+  registerRequest,
+  registerComplete,
+  forgotPassword,
+  resetPassword,
+} from '../api/authApi';
 import type { LoginRequest, User } from '../types';
 import { useDispatch } from 'react-redux';
 import { setCredentials, clearCredentials } from '@/store/authSlice';
@@ -48,5 +55,49 @@ export const useLogout = () => {
       queryClient.clear();
       navigate('/login');
     },
+  });
+};
+
+/**
+ * Hook to handle requesting a registration OTP.
+ *
+ * @returns React Query mutation object for the register request.
+ */
+export const useRegisterRequest = () => {
+  return useMutation({
+    mutationFn: registerRequest,
+  });
+};
+
+/**
+ * Hook to handle completing the user registration.
+ *
+ * @returns React Query mutation object for the complete registration request.
+ */
+export const useRegisterComplete = () => {
+  return useMutation({
+    mutationFn: registerComplete,
+  });
+};
+
+/**
+ * Hook to handle requesting a password reset OTP.
+ *
+ * @returns React Query mutation object for the forgot password request.
+ */
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: forgotPassword,
+  });
+};
+
+/**
+ * Hook to handle resetting the user password.
+ *
+ * @returns React Query mutation object for the reset password request.
+ */
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: resetPassword,
   });
 };
