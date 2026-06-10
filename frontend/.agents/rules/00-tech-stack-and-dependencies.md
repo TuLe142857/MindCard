@@ -16,7 +16,8 @@ trigger: always_on
 - **Vite** as the bundler.
 
 ### Styling & UI
-- **Tailwind CSS:** Must be used for ALL styling. Do not write custom `.css` or `.scss` files unless strictly necessary for global resets.
+- **Tailwind CSS:** Must be used for ALL styling. Do not write custom `.css` or `.scss` files unless strictly necessary.
+- **Global CSS (`frontend/src/index.css`):** Use this file for general Tailwind CSS configuration. Any global overrides or extensions must be placed inside Tailwind directives (e.g., `@layer base { ... }` or `@layer components { ... }`).
 - **Lucide React (`lucide-react`):** The ONLY library used for icons. Do not use FontAwesome, Heroicons, or raw inline SVG code.
 
 ### State Management & Data Fetching
