@@ -1,22 +1,53 @@
 x-backend-env: &backend-env
-  DB_USER: ${DB_USER}
-  DB_PASSWORD: ${DB_PASSWORD}
-  DB_NAME: ${DB_NAME}
-  DB_PORT: 5432
-  DB_HOST: db
+  SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+
+  DB_USER: ${DB_USER:?Variable is not set or empty}
+  DB_PASSWORD: ${DB_PASSWORD:?Variable is not set or empty}
+  DB_NAME: ${DB_NAME:?Variable is not set or empty}
+  DB_PORT: ${DB_PORT:?Variable is not set or empty}
+  DB_HOST: ${DB_HOST:?Variable is not set or empty}
+  
+  S3_ENDPOINT: ${S3_ENDPOINT:?Variable is not set or empty}
+  S3_PUBLIC_URL_OVERRIDE: ${S3_PUBLIC_URL_OVERRIDE}
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Variable is not set or empty}
+  S3_SECRETEY: ${S3_SECRET_KEY:?Variable is not set or empty}
+  S3_BUCKET: ${S3_BUCKET:?Variable is not set or empty}
+  
+  REDIS_HOST: ${REDIS_HOST:?Variable is not set or empty}
+  REDIS_PORT: ${REDIS_PORT:?Variable is not set or empty}
+
+  JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Variable is not set or empty}
+  JWT_ACCESS_TOKEN_COOKIE_NAME: ${JWT_ACCESS_COOKIE_NAME:-access_token}
+  JWT_REFRESH_TOKEN_COOKIE_NAME: ${JWT_REFRESH_COOKIE_NAME:-refresh_token}
+  JWT_ACCESS_TOKEN_EXPIRATION_SECOND: ${JWT_ACCESS_TOKEN_EXPIRATION_SECOND:-1800}
+  JWT_REFRESH_TOKEN_EXPIRATION_SECOND: ${JWT_REFRESH_TOKEN_EXPIRATION_SECOND:-604800}
+
+  MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+  MAIL_PORT: ${MAIL_PORT:-587}
+  MAIL_SEND_FROM: ${MAIL_SEND_FROM:?Variable is not set or empty}
+  MAIL_PASSWORD: ${MAIL_PASSWORD:?Variable is not set or empty}
+  
 
 services:
   frontend:
+    profiles: ["frontend"]
     build:
       context: ./frontend
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT_EXTERNAL:-5173}:5173"
 
-  # backend:
-  #   build:
-  #     context: ./backend
-  #   restart: unless-stopped
-  #   environment:
-  #     <<: *backend-env
+
+  backend:
+    profiles: ["backend"]
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      <<: *backend-env      
+    ports:
+      - "127.0.0.1:${BACKEND_PORT_EXTERNAL:-8080}:8080"
+
 
   db:
     image: postgres:18.3
@@ -30,17 +61,13 @@ services:
     ports:
       - "127.0.0.1:${DB_PORT_EXTERNAL:-5432}:5432"
 
+
   redis:
     image: redis:8.6
     restart: unless-stopped
     ports:
       - "127.0.0.1:${REDIS_PORT_EXTERNAL:-6379}:6379"
-  mailhog:
-    image: mailhog/mailhog:latest
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:1025:1025" # SMTP server
-      - "127.0.0.1:8025:8025" # Web UI
+
 
   s3:
     image: minio/minio:latest
@@ -49,4 +76,6 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER?-Variable is empty or not set}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --address :9000 --console-address :9001
-  
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT_EXTERNAL:-9000}:9000" 
+      - "127.0.0.1:${MINIO_CONSOLE_PORT_EXTERNAL:-9001}:9001"  
