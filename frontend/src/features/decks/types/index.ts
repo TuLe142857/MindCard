@@ -47,6 +47,8 @@ export interface DeckRatingRequest {
  * Includes optional files for image and audio.
  */
 export interface CardCreateRequest {
+  /** Type of the card */
+  type: 'BASIC' | 'TYPE';
   /** Text for the front of the card */
   frontText?: string;
   /** Text for the back of the card */

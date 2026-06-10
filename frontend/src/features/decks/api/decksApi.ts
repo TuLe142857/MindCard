@@ -133,6 +133,7 @@ export const getDeckCards = async (
 export const batchAddCards = async (deckId: number, cards: CardCreateRequest[]): Promise<void> => {
   const formData = new FormData();
   cards.forEach((card, index) => {
+    formData.append(`cards[${index}].type`, card.type);
     if (card.frontText) formData.append(`cards[${index}].frontText`, card.frontText);
     if (card.backText) formData.append(`cards[${index}].backText`, card.backText);
     if (card.frontImage) formData.append(`cards[${index}].frontImage`, card.frontImage);
