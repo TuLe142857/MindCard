@@ -1,15 +1,42 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import type { ApiErrorResponse } from '@/shared/types/api.ts';
 
-// TODO: Ensure these paths exist when setting up Redux and React Query
-// import { store } from '@/store';
-// import { logout } from '@/store/authSlice';
-// import { queryClient } from '@/shared/api/queryClient';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+// Callback Registry: Allows the main app to define what happens on forced logout (e.g. clearing store/cache)
+// This avoids importing store/queryClient directly and prevents circular dependencies.
+let onForcedLogoutCallback: (() => void) | null = null;
+
+/**
+ * Registers a callback to be executed AFTER a forced logout (e.g., due to 401 Unauthorized).
+ * The API call to logout and clear cookies is already handled internally by the apiClient.
+ *
+ * Only use this callback to clear client-side state (like Redux or React Query cache).
+ *
+ * @param callback - The cleanup function to execute after logout.
+ */
+export const registerAfterForcedLogoutCallback = (callback: () => void) => {
+  onForcedLogoutCallback = callback;
+};
+
+/**
+ * Handles clearing the user session completely and redirecting to login.
+ */
+const handleForcedLogout = () => {
+  // Call API to blacklist token and clear cookies
+  axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true }).catch(() => {});
+
+  // Execute external state cleanup (Redux & React Query) via the registered callback
+  if (onForcedLogoutCallback) {
+    onForcedLogoutCallback();
+  }
+
+  // Redirect to login page
+  window.location.href = '/login';
+};
 
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}`,
   withCredentials: true, // Crucial for sending HTTP-only cookies
   headers: {
     'Content-Type': 'application/json',
@@ -20,29 +47,19 @@ export const apiClient = axios.create({
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: AxiosError<ApiErrorResponse>) => void;
 }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: AxiosError<ApiErrorResponse> | null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve(undefined);
     }
   });
   failedQueue = [];
 };
-
-// Request Interceptor
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    // Note: If using HTTP-only cookies for JWT, we don't need to manually attach the token here.
-    // withCredentials: true will automatically send the cookies.
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // Response Interceptor
 apiClient.interceptors.response.use(
@@ -60,17 +77,10 @@ apiClient.interceptors.response.use(
         (errorCode === 'JWT_TOKEN_EXPIRED' ||
           errorCode === 'INVALID_JWT_TOKEN' ||
           errorCode === 'JWT_TOKEN_REVOKED' ||
-          status === 403) &&
+          status === 403 ||
+          status === 401) &&
         !originalRequest._retry;
 
-      // Check conditions for immediate forced logout
-      const isAuthError =
-        status === 401 &&
-        ['INVALID_JWT_TOKEN', 'JWT_TOKEN_REVOKED', 'UNAUTHENTICATED', 'LOGIN_FAILED'].includes(
-          errorCode || ''
-        );
-
-      // 1. Handle Token Refresh Loop
       if (needRefresh && !originalRequest._retry) {
         if (isRefreshing) {
           // If already refreshing, queue the request
@@ -90,7 +100,7 @@ apiClient.interceptors.response.use(
 
         try {
           // Attempt to refresh the token
-          await axios.post(`${API_BASE_URL}/api/auth/refresh`, {}, { withCredentials: true });
+          await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
 
           isRefreshing = false;
           processQueue(null);
@@ -107,30 +117,8 @@ apiClient.interceptors.response.use(
           return Promise.reject(refreshError);
         }
       }
-
-      // 2. Handle Immediate Forced Logout
-      if (isAuthError) {
-        handleForcedLogout();
-      }
     }
 
     return Promise.reject(error);
   }
 );
-
-/**
- * Handles clearing the user session completely and redirecting to login.
- */
-const handleForcedLogout = () => {
-  // Call API to blacklist token and clear cookies
-  axios.post(`${API_BASE_URL}/api/auth/logout`, {}, { withCredentials: true }).catch(() => {});
-
-  // 1. Dispatch the Redux logout action
-  // if (store) store.dispatch(logout());
-
-  // 2. Clear React Query cache to wipe sensitive data
-  // if (queryClient) queryClient.clear();
-
-  // 3. Redirect to login page
-  window.location.href = '/login';
-};
