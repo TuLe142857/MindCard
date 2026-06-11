@@ -60,14 +60,31 @@ export const SyncDeck: React.FC = () => {
   const navigate = useNavigate();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
+  const [selectedDiffIds, setSelectedDiffIds] = useState<number[]>(MOCK_DIFFS.map(d => d.cardId));
 
-  const handleSyncAll = () => {
+  const handleSyncSelected = () => {
+    if (selectedDiffIds.length === 0) return;
     setIsSyncing(true);
-    // Simulate API call
+    // Simulate API call with selectedDiffIds
+    console.log("Syncing cards:", selectedDiffIds);
     setTimeout(() => {
       setIsSyncing(false);
       setIsSynced(true);
     }, 1500);
+  };
+
+  const toggleDiff = (id: number) => {
+    setSelectedDiffIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAll = () => {
+    if (selectedDiffIds.length === MOCK_DIFFS.length) {
+      setSelectedDiffIds([]);
+    } else {
+      setSelectedDiffIds(MOCK_DIFFS.map(d => d.cardId));
+    }
   };
 
   const renderMediaValue = (val: string | null, type: 'image' | 'audio', isCurrent: boolean) => {
@@ -205,11 +222,14 @@ export const SyncDeck: React.FC = () => {
           </Button>
           <Button 
             className="gap-2 bg-yellow-500 hover:bg-yellow-600 text-yellow-950 font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)]"
-            onClick={handleSyncAll}
+            onClick={handleSyncSelected}
             isLoading={isSyncing}
+            disabled={selectedDiffIds.length === 0}
           >
             <RefreshCw size={16} className={cn(isSyncing && "animate-spin")} />
-            Sync All Updates
+            {selectedDiffIds.length === MOCK_DIFFS.length 
+              ? "Sync All Updates" 
+              : `Sync Selected (${selectedDiffIds.length})`}
           </Button>
         </div>
       </div>
@@ -269,27 +289,58 @@ export const SyncDeck: React.FC = () => {
 
       {/* Diff List */}
       <div className="mt-4 flex flex-col gap-6">
-        <h2 className="text-lg font-bold text-slate-200 border-b border-slate-800 pb-2">Detailed Changes</h2>
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h2 className="text-lg font-bold text-slate-200">Detailed Changes</h2>
+          <label className="flex items-center gap-2 cursor-pointer group">
+            <input 
+              type="checkbox" 
+              checked={selectedDiffIds.length === MOCK_DIFFS.length}
+              onChange={toggleAll}
+              className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-blue-500/20 cursor-pointer"
+            />
+            <span className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">Select All</span>
+          </label>
+        </div>
         
         <div className="flex flex-col gap-6">
-          {MOCK_DIFFS.map((diff, index) => (
-            <div key={diff.cardId} className="flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/50">
-                <span className="text-sm font-medium text-slate-400">Card #{index + 1}</span>
-                <span className={cn(
-                  "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider",
-                  diff.changeType === 'NEW' && "bg-green-500/20 text-green-400 border border-green-500/30",
-                  diff.changeType === 'DELETED' && "bg-red-500/20 text-red-400 border border-red-500/30",
-                  diff.changeType === 'UPDATED' && "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                )}>
-                  {diff.changeType}
-                </span>
+          {MOCK_DIFFS.map((diff, index) => {
+            const isSelected = selectedDiffIds.includes(diff.cardId);
+            return (
+              <div 
+                key={diff.cardId} 
+                className={cn(
+                  "flex flex-col bg-slate-900 border rounded-xl overflow-hidden transition-all duration-200",
+                  isSelected ? "border-blue-500/50 shadow-[0_0_15px_rgba(37,99,235,0.1)]" : "border-slate-800 opacity-60 hover:opacity-80"
+                )}
+              >
+                <div 
+                  className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/50 cursor-pointer"
+                  onClick={() => toggleDiff(diff.cardId)}
+                >
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="checkbox" 
+                      checked={isSelected}
+                      onChange={() => {}} // handled by parent div onClick
+                      className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-blue-500/20 cursor-pointer pointer-events-none"
+                    />
+                    <span className="text-sm font-medium text-slate-300">Card #{index + 1}</span>
+                  </div>
+                  <span className={cn(
+                    "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider",
+                    diff.changeType === 'NEW' && "bg-green-500/20 text-green-400 border border-green-500/30",
+                    diff.changeType === 'DELETED' && "bg-red-500/20 text-red-400 border border-red-500/30",
+                    diff.changeType === 'UPDATED' && "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                  )}>
+                    {diff.changeType}
+                  </span>
+                </div>
+                <div className={cn("p-5 transition-opacity duration-200", !isSelected && "opacity-40 grayscale-[50%]")}>
+                  {renderDiffContent(diff)}
+                </div>
               </div>
-              <div className="p-5">
-                {renderDiffContent(diff)}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
