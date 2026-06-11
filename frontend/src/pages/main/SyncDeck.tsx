@@ -14,91 +14,53 @@ import { Button } from '@/shared/components/ui/Button';
 import { cn } from '@/shared/utils/cn';
 import type { DeckSyncSummary, CardDiff, FieldDiff } from '@/features/saved-decks/types';
 
-// Dummy Data
-const MOCK_SUMMARY: DeckSyncSummary = {
-  deckId: 42,
-  totalNewCards: 2,
-  totalUpdatedCards: 2,
-  totalDeletedCards: 1,
-};
-
-const MOCK_DIFFS: CardDiff[] = [
-  {
-    cardId: 101,
-    changeType: 'NEW',
-    currentVersion: 0,
-    upcomingVersion: 1,
-    type: { current: null, upcoming: 'BASIC' },
-    frontText: { current: null, upcoming: 'What is the largest mammal on Earth?' },
-    frontImage: {
-      current: null,
-      upcoming: 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Blue_Whale_001_body_bw.jpg',
-    },
-    frontAudio: {
-      current: null,
-      upcoming: 'https://actions.google.com/sounds/v1/water/ocean_waves.ogg',
-    },
-    backText: { current: null, upcoming: 'Blue Whale' },
-    backImage: null,
-    backAudio: null,
-  },
-  {
-    cardId: 55,
-    changeType: 'UPDATED',
-    currentVersion: 2,
-    upcomingVersion: 3,
-    type: null,
-    frontText: { current: 'React logo', upcoming: 'Identify this framework logo' },
-    frontImage: {
-      current: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg',
-      upcoming: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg',
-    },
-    frontAudio: null,
-    backText: { current: 'ReactJS', upcoming: 'React' },
-    backImage: {
-      current: null,
-      upcoming:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/200px-React-icon.svg.png',
-    },
-    backAudio: {
-      current: null,
-      upcoming: 'https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg',
-    },
-  },
-  {
-    cardId: 42,
-    changeType: 'DELETED',
-    currentVersion: 1,
-    upcomingVersion: 1, // Doesn't matter
-    type: null,
-    frontText: { current: 'Old deprecated AWS service', upcoming: null },
-    frontImage: null,
-    frontAudio: {
-      current: 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg',
-      upcoming: null,
-    },
-    backText: { current: 'Some answer', upcoming: null },
-    backImage: null,
-    backAudio: null,
-  },
-];
+import { Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
+import {
+  useSyncSummary,
+  useSyncDetails,
+  useSyncAllCards,
+  useSyncPartialCards,
+} from '@/features/saved-decks/hooks/useSavedDecks';
 
 export const SyncDeck: React.FC = () => {
-  useParams<{ savedDeckId: string }>();
+  const { savedDeckId } = useParams<{ savedDeckId: string }>();
+  const parsedId = Number(savedDeckId);
   const navigate = useNavigate();
-  const [isSyncing, setIsSyncing] = useState(false);
+  
   const [isSynced, setIsSynced] = useState(false);
-  const [selectedDiffIds, setSelectedDiffIds] = useState<number[]>(MOCK_DIFFS.map((d) => d.cardId));
+  const [selectedDiffIds, setSelectedDiffIds] = useState<number[]>([]);
 
-  const handleSyncSelected = () => {
+  const { data: summaryResponse, isLoading: isLoadingSummary } = useSyncSummary(parsedId);
+  const { data: detailsResponse, isLoading: isLoadingDetails } = useSyncDetails(parsedId, { page: 1, limit: 100 });
+  const { mutateAsync: syncPartial, isPending: isSyncingPartial } = useSyncPartialCards();
+  const { mutateAsync: syncAll, isPending: isSyncingAll } = useSyncAllCards();
+
+  const summary = summaryResponse;
+  const diffs = detailsResponse?.data || [];
+  const isSyncing = isSyncingPartial || isSyncingAll;
+  const isLoading = isLoadingSummary || isLoadingDetails;
+
+  React.useEffect(() => {
+    if (diffs.length > 0 && selectedDiffIds.length === 0 && !isSynced) {
+      setSelectedDiffIds(diffs.map((d) => d.cardId));
+    }
+  }, [diffs, isSynced, selectedDiffIds.length]);
+
+  const handleSyncSelected = async () => {
     if (selectedDiffIds.length === 0) return;
-    setIsSyncing(true);
-    // Simulate API call with selectedDiffIds
-    console.log('Syncing cards:', selectedDiffIds);
-    setTimeout(() => {
-      setIsSyncing(false);
+    const toastId = toast.loading('Syncing cards...');
+    try {
+      if (selectedDiffIds.length === diffs.length) {
+        await syncAll(parsedId);
+      } else {
+        await syncPartial({ savedDeckId: parsedId, data: { cardIds: selectedDiffIds } });
+      }
+      toast.update(toastId, { type: 'success', render: 'Sync successful', isLoading: false, autoClose: 3000 });
       setIsSynced(true);
-    }, 1500);
+    } catch {
+      toast.update(toastId, { type: 'error', render: 'Failed to sync cards', isLoading: false, autoClose: 3000 });
+    }
   };
 
   const toggleDiff = (id: number) => {
@@ -108,10 +70,10 @@ export const SyncDeck: React.FC = () => {
   };
 
   const toggleAll = () => {
-    if (selectedDiffIds.length === MOCK_DIFFS.length) {
+    if (selectedDiffIds.length === diffs.length) {
       setSelectedDiffIds([]);
     } else {
-      setSelectedDiffIds(MOCK_DIFFS.map((d) => d.cardId));
+      setSelectedDiffIds(diffs.map((d) => d.cardId));
     }
   };
 
@@ -254,6 +216,14 @@ export const SyncDeck: React.FC = () => {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[60vh]">
+        <Loader2 className="animate-spin text-blue-500" size={40} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 max-w-5xl mx-auto h-full pb-12">
       {/* Header */}
@@ -276,7 +246,7 @@ export const SyncDeck: React.FC = () => {
             disabled={selectedDiffIds.length === 0}
           >
             <RefreshCw size={16} className={cn(isSyncing && 'animate-spin')} />
-            {selectedDiffIds.length === MOCK_DIFFS.length
+            {selectedDiffIds.length === diffs.length
               ? 'Sync All Updates'
               : `Sync Selected (${selectedDiffIds.length})`}
           </Button>
@@ -302,7 +272,7 @@ export const SyncDeck: React.FC = () => {
             <Plus size={24} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-slate-100">{MOCK_SUMMARY.totalNewCards}</div>
+            <div className="text-2xl font-bold text-slate-100">{summary?.totalNewCards || 0}</div>
             <div className="text-sm text-slate-500">New Cards</div>
           </div>
         </div>
@@ -313,7 +283,7 @@ export const SyncDeck: React.FC = () => {
           </div>
           <div>
             <div className="text-2xl font-bold text-slate-100">
-              {MOCK_SUMMARY.totalUpdatedCards}
+              {summary?.totalUpdatedCards || 0}
             </div>
             <div className="text-sm text-slate-500">Updated Cards</div>
           </div>
@@ -325,7 +295,7 @@ export const SyncDeck: React.FC = () => {
           </div>
           <div>
             <div className="text-2xl font-bold text-slate-100">
-              {MOCK_SUMMARY.totalDeletedCards}
+              {summary?.totalDeletedCards || 0}
             </div>
             <div className="text-sm text-slate-500">Deleted Cards</div>
           </div>
@@ -333,7 +303,7 @@ export const SyncDeck: React.FC = () => {
       </div>
 
       {/* Warning */}
-      {MOCK_SUMMARY.totalDeletedCards > 0 && (
+      {(summary?.totalDeletedCards || 0) > 0 && (
         <div className="flex items-start gap-3 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400 text-sm">
           <AlertTriangle size={20} className="shrink-0 mt-0.5" />
           <p>
@@ -350,7 +320,7 @@ export const SyncDeck: React.FC = () => {
           <label className="flex items-center gap-2 cursor-pointer group">
             <input
               type="checkbox"
-              checked={selectedDiffIds.length === MOCK_DIFFS.length}
+              checked={selectedDiffIds.length === diffs.length && diffs.length > 0}
               onChange={toggleAll}
               className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-blue-500/20 cursor-pointer"
             />
@@ -361,7 +331,7 @@ export const SyncDeck: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-6">
-          {MOCK_DIFFS.map((diff, index) => {
+          {diffs.map((diff, index) => {
             const isSelected = selectedDiffIds.includes(diff.cardId);
             return (
               <div

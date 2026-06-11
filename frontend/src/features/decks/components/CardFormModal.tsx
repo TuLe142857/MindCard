@@ -64,11 +64,17 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
         frontText: initialData?.front?.text || '',
         backText: initialData?.back?.text || '',
       });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFrontImagePreview(initialData?.front?.imageUrl || null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBackImagePreview(initialData?.back?.imageUrl || null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFrontImageFile(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBackImageFile(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFrontAudioFile(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBackAudioFile(null);
     }
   }, [isOpen, initialData, reset]);

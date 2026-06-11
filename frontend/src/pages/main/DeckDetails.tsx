@@ -71,7 +71,7 @@ export const DeckDetails: React.FC = () => {
         });
         setIsCardModalOpen(false);
         setEditingCard(null);
-      } catch (error) {
+      } catch {
         toast.update(toastId, {
           type: 'error',
           render: 'Failed to update card',

@@ -4,63 +4,30 @@ import { Search, Flame } from 'lucide-react';
 import { SavedDeckCard } from '@/features/saved-decks/components/SavedDeckCard';
 import type { SavedDeckSummary } from '@/features/saved-decks/types';
 
-const MOCK_SAVED_DECKS: SavedDeckSummary[] = [
-  {
-    id: 1,
-    originalDeckId: 10,
-    originalDeckName: 'JLPT N3 Vocabulary',
-    name: 'JLPT N3 Vocabulary',
-    creator: 'Sensei',
-    topic: 'Languages',
-    description: 'Essential N3 vocabulary.',
-    totalCards: 1200,
-    newCards: 20,
-    learningCards: 5,
-    reviewCards: 12,
-    dueCards: 37,
-    hasUpdate: false,
-    isOriginalDeckActive: true,
-  },
-  {
-    id: 2,
-    originalDeckId: 42,
-    originalDeckName: 'AWS Solutions Architect',
-    name: 'AWS Solutions Architect',
-    creator: 'CloudGuru',
-    topic: 'Technology',
-    description: 'Exam prep questions.',
-    totalCards: 300,
-    newCards: 0,
-    learningCards: 0,
-    reviewCards: 45,
-    dueCards: 45,
-    hasUpdate: true,
-    isOriginalDeckActive: true,
-  },
-  {
-    id: 3,
-    originalDeckId: 55,
-    originalDeckName: 'European Capitals',
-    name: 'European Capitals',
-    creator: 'GeoMaster',
-    topic: 'Geography',
-    description: 'Capitals of Europe.',
-    totalCards: 44,
-    newCards: 0,
-    learningCards: 0,
-    reviewCards: 0,
-    dueCards: 0,
-    hasUpdate: false,
-    isOriginalDeckActive: true,
-  },
-];
+import { useGetSavedDecks } from '@/features/users/hooks/useUsers';
+import { Loader2 } from 'lucide-react';
 
 export const Library: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState('');
   const navigate = useNavigate();
 
+  // Debounce search input
+  React.useEffect(() => {
+    const timer = setTimeout(() => setDebouncedTerm(searchTerm), 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const { data, isLoading } = useGetSavedDecks({
+    keyword: debouncedTerm,
+    page: 1,
+    limit: 100,
+  });
+
+  const savedDecks = data?.data || [];
+
   // Tính toán tổng số thẻ cần học hôm nay
-  const totalCardsToStudyToday = MOCK_SAVED_DECKS.reduce(
+  const totalCardsToStudyToday = savedDecks.reduce(
     (total, deck) => total + deck.newCards + deck.learningCards + deck.reviewCards,
     0
   );
@@ -104,9 +71,13 @@ export const Library: React.FC = () => {
       </div>
 
       {/* Grid of Saved Decks */}
-      {MOCK_SAVED_DECKS.length > 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20 flex-1">
+          <Loader2 className="animate-spin text-blue-500" size={40} />
+        </div>
+      ) : savedDecks.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {MOCK_SAVED_DECKS.map((deck) => (
+          {savedDecks.map((deck) => (
             <SavedDeckCard
               key={deck.id}
               deck={deck}
@@ -124,7 +95,9 @@ export const Library: React.FC = () => {
           </div>
           <h3 className="text-lg font-medium text-slate-200 mb-2">Your library is empty</h3>
           <p className="text-sm text-slate-500 mb-6 text-center max-w-sm">
-            Go to the Explore page to find and save decks created by the community.
+            {debouncedTerm 
+              ? 'No decks found matching your search.' 
+              : 'Go to the Explore page to find and save decks created by the community.'}
           </p>
           <button
             onClick={() => navigate('/explore')}
