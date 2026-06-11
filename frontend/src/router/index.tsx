@@ -16,6 +16,7 @@ import { Library } from '@/pages/main/Library';
 import { MyDecks } from '@/pages/main/MyDecks';
 import { Profile } from '@/pages/main/Profile';
 import { DeckDetails } from '@/pages/main/DeckDetails';
+import { StudySession } from '@/pages/main/StudySession';
 
 // Generic
 import { NotFound } from '../pages/NotFound';
@@ -52,6 +53,8 @@ export const router = createBrowserRouter([
           { path: '/deck/:deckId', element: <DeckDetails /> },
         ],
       },
+      // Focus mode routes (no MainLayout)
+      { path: '/study/:savedDeckId', element: <div className="min-h-screen bg-slate-950 p-4 md:p-8 text-slate-200"><StudySession /></div> },
     ],
   },
   {

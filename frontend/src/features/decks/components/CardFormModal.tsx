@@ -106,6 +106,18 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
 
         <form onSubmit={handleSubmit(onFormSubmit)} className="p-6 flex flex-col gap-8">
           
+          {/* Card Type Selector */}
+          <div className="flex flex-col gap-2 border-b border-slate-800 pb-6">
+            <label className="text-sm font-medium text-slate-300">Card Type</label>
+            <select
+              className="w-full md:w-1/2 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none"
+              {...register('type')}
+            >
+              <option value="BASIC">Basic (Standard Flashcard)</option>
+              <option value="TYPE">Type Answer (Requires typing exact answer)</option>
+            </select>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* FRONT SIDE */}
             <div className="flex flex-col gap-4">

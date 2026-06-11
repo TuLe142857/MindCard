@@ -199,8 +199,11 @@ export const DeckDetails: React.FC = () => {
                  className="flex flex-col md:flex-row bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-blue-500/30 transition-colors cursor-pointer"
                  onClick={() => openEditCard(card)}
                >
-                 <div className="flex items-center justify-center bg-slate-950 p-4 md:w-16 border-b md:border-b-0 md:border-r border-slate-800 text-slate-500 font-medium">
-                   {index + 1}
+                 <div className="flex flex-col items-center justify-center bg-slate-950 p-4 md:w-24 border-b md:border-b-0 md:border-r border-slate-800 gap-2">
+                   <span className="text-slate-500 font-medium text-lg">#{index + 1}</span>
+                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-400 border border-slate-700 tracking-wider">
+                     {card.type === 'TYPE' ? 'TYPING' : 'BASIC'}
+                   </span>
                  </div>
                  
                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800">
