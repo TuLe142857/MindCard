@@ -17,4 +17,13 @@ public class SavedDeckSpecification {
             );
         };
     }
+
+    public static Specification<SavedDeck> hasOwnerId(Integer ownerId){
+        return (root, query, builder) -> {
+            if (ownerId == null){
+                return null;
+            }
+            return builder.equal(root.get("user").get("id"), ownerId);
+        };
+    }
 }

@@ -48,7 +48,9 @@ public class SavedDeckService {
      * @return a page of {@link SavedDeckResponse} DTOs.
      */
     public Page<SavedDeckResponse> listSavedDecks(int userId, SavedDeckQueryRequest query) {
-        Specification<SavedDeck> spec = Specification.where(SavedDeckSpecification.hasKeyword(query.keyword()));
+        Specification<SavedDeck> spec = Specification.where(SavedDeckSpecification.hasKeyword(query.keyword()))
+                .and(SavedDeckSpecification.hasOwnerId(userId))
+                ;
 
         return savedDeckRepository.findAll(spec, query.toPageable())
                 .map(savedDeck -> mapToSavedDeckResponse(savedDeck, userId));

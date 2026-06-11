@@ -5,86 +5,81 @@ import { Button } from '@/shared/components/ui/Button';
 import { Flashcard3D } from '@/features/study/components/Flashcard3D';
 import type { Card } from '@/features/decks/types';
 
-const MOCK_STUDY_CARDS: Card[] = [
-  {
-    id: 1,
-    type: 'BASIC',
-    front: { text: 'What is the Event Loop in JavaScript?' },
-    back: {
-      text: 'The Event Loop is a mechanism that handles asynchronous callbacks in Node.js and browsers, allowing non-blocking I/O operations.',
-    },
-  },
-  {
-    id: 5,
-    type: 'BASIC',
-    front: {
-      text: 'Listen to the audio and identify the animal',
-      audioUrl: 'https://actions.google.com/sounds/v1/animals/cat_meow_2.ogg',
-    },
-    back: {
-      text: 'Cat',
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/Cat_November_2010-1a.jpg',
-    },
-  },
-  {
-    id: 4,
-    type: 'TYPE',
-    front: { text: 'How do you declare a constant variable in JavaScript? (Type exactly)' },
-    back: { text: 'const' },
-  },
-  {
-    id: 2,
-    type: 'BASIC',
-    front: { text: 'What is a Closure in JavaScript?' },
-    back: {
-      text: 'A closure is the combination of a function bundled together with references to its surrounding state (the lexical environment).',
-    },
-  },
-  {
-    id: 3,
-    type: 'BASIC',
-    front: {
-      text: 'Identify this logo',
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg',
-    },
-    back: {
-      text: 'React',
-      audioUrl: 'https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg',
-    },
-  },
-];
+import { useSearchParams } from 'react-router-dom';
+import { useStudyQueue } from '@/features/saved-decks/hooks/useSavedDecks';
+import { useReviewCard } from '@/features/cards/hooks/useCards';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 export const StudySession: React.FC = () => {
-  useParams<{ savedDeckId: string }>();
+  const { savedDeckId } = useParams<{ savedDeckId: string }>();
+  const parsedId = Number(savedDeckId);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const type = (searchParams.get('type') as 'new' | 'review') || undefined;
+
+  const { data: studyCards = [], isLoading } = useStudyQueue(parsedId, { limit: 20, type });
+  const { mutateAsync: reviewCard } = useReviewCard();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState('');
 
-  const currentCard = MOCK_STUDY_CARDS[currentIndex];
-  const progressPercent = (currentIndex / MOCK_STUDY_CARDS.length) * 100;
+  const currentCard = studyCards[currentIndex];
+  const progressPercent = studyCards.length > 0 ? (currentIndex / studyCards.length) * 100 : 100;
 
   const handleFlip = () => {
     if (!isFlipped) setIsFlipped(true);
   };
 
-  const handleRate = (rating: number) => {
-    console.log(`Card ${currentCard.id} rated: ${rating}`);
+  const handleRate = async (rating: number) => {
+    if (!currentCard) return;
 
-    // Move to next card
-    if (currentIndex < MOCK_STUDY_CARDS.length - 1) {
-      setIsFlipped(false);
-      // Small timeout to allow flip animation back to front before changing text
-      setTimeout(() => {
-        setCurrentIndex((prev) => prev + 1);
-        setTypedAnswer(''); // reset typed answer
-      }, 300);
-    } else {
-      setSessionCompleted(true);
+    try {
+      await reviewCard({ cardId: currentCard.id, data: { quality: rating } });
+
+      // Move to next card
+      if (currentIndex < studyCards.length - 1) {
+        setIsFlipped(false);
+        // Small timeout to allow flip animation back to front before changing text
+        setTimeout(() => {
+          setCurrentIndex((prev) => prev + 1);
+          setTypedAnswer(''); // reset typed answer
+        }, 300);
+      } else {
+        setSessionCompleted(true);
+      }
+    } catch {
+      toast.error('Failed to submit review. Please try again.');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-100px)]">
+        <Loader2 className="animate-spin text-blue-500" size={48} />
+      </div>
+    );
+  }
+
+  if (!currentCard && !sessionCompleted) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] animate-in zoom-in fade-in duration-500">
+        <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
+          <Check size={48} className="text-green-500" />
+        </div>
+        <h1 className="text-3xl font-bold text-slate-100 mb-2">You're all caught up!</h1>
+        <p className="text-slate-400 mb-8 max-w-md text-center">
+          There are no more cards to study in this deck right now. Great job!
+        </p>
+        <Button onClick={() => navigate('/library')} className="px-8 py-6 text-lg">
+          Return to Library
+        </Button>
+      </div>
+    );
+  }
 
   if (sessionCompleted) {
     return (
@@ -118,7 +113,7 @@ export const StudySession: React.FC = () => {
           <div className="flex-1 max-w-xl">
             <div className="flex justify-between text-xs font-medium text-slate-400 mb-2">
               <span>
-                Card {currentIndex + 1} of {MOCK_STUDY_CARDS.length}
+                Card {currentIndex + 1} of {studyCards.length}
               </span>
               <span>{Math.round(progressPercent)}%</span>
             </div>
