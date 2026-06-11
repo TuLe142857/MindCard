@@ -23,11 +23,13 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, className, onClick }) 
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400">
             {deck.topic}
           </span>
-          {deck.visibility === 'PUBLIC' ? (
-            <Globe size={16} className="text-slate-500" title="Public" />
-          ) : (
-            <Lock size={16} className="text-slate-500" title="Private" />
-          )}
+          <div title={deck.visibility === 'PUBLIC' ? 'Public' : 'Private'} className="flex">
+            {deck.visibility === 'PUBLIC' ? (
+              <Globe size={16} className="text-slate-500" />
+            ) : (
+              <Lock size={16} className="text-slate-500" />
+            )}
+          </div>
         </div>
 
         <h3 className="text-lg font-bold text-slate-100 mb-2 line-clamp-1 group-hover:text-blue-400 transition-colors">
