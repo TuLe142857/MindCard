@@ -17,6 +17,7 @@ import { MyDecks } from '@/pages/main/MyDecks';
 import { Profile } from '@/pages/main/Profile';
 import { DeckDetails } from '@/pages/main/DeckDetails';
 import { StudySession } from '@/pages/main/StudySession';
+import { SyncDeck } from '@/pages/main/SyncDeck';
 
 // Generic
 import { NotFound } from '../pages/NotFound';
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
           { path: '/my-decks', element: <MyDecks /> },
           { path: '/profile', element: <Profile /> },
           { path: '/deck/:deckId', element: <DeckDetails /> },
+          { path: '/sync/:savedDeckId', element: <SyncDeck /> },
         ],
       },
       // Focus mode routes (no MainLayout)

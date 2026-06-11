@@ -13,6 +13,18 @@ const MOCK_STUDY_CARDS: Card[] = [
     back: { text: 'The Event Loop is a mechanism that handles asynchronous callbacks in Node.js and browsers, allowing non-blocking I/O operations.' },
   },
   {
+    id: 5,
+    type: 'BASIC',
+    front: { 
+      text: 'Listen to the audio and identify the animal', 
+      audioUrl: 'https://actions.google.com/sounds/v1/animals/cat_meow_2.ogg'
+    },
+    back: { 
+      text: 'Cat',
+      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/Cat_November_2010-1a.jpg'
+    },
+  },
+  {
     id: 4,
     type: 'TYPE',
     front: { text: 'How do you declare a constant variable in JavaScript? (Type exactly)' },
@@ -28,7 +40,7 @@ const MOCK_STUDY_CARDS: Card[] = [
     id: 3,
     type: 'BASIC',
     front: { text: 'Identify this logo', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg' },
-    back: { text: 'React' },
+    back: { text: 'React', audioUrl: 'https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg' },
   }
 ];
 
