@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Flame } from 'lucide-react';
 import { SavedDeckCard } from '@/features/saved-decks/components/SavedDeckCard';
-import type { SavedDeckSummary } from '@/features/saved-decks/types';
+
 
 import { useGetSavedDecks } from '@/features/users/hooks/useUsers';
 import { Loader2 } from 'lucide-react';

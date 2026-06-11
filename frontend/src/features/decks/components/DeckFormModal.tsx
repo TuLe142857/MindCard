@@ -9,7 +9,7 @@ import { useTopics } from '@/features/topics/hooks/useTopics';
 
 const deckSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters').max(100, 'Name is too long'),
-  topicId: z.coerce.number().min(1, 'Please select a topic'),
+  topicId: z.number().min(1, 'Please select a topic'),
   description: z.string().max(500, 'Description is too long').optional(),
   visibility: z.enum(['PUBLIC', 'PRIVATE']),
 });
@@ -90,7 +90,7 @@ export const DeckFormModal: React.FC<DeckFormModalProps> = ({
             <label className="text-sm font-medium text-slate-300">Topic</label>
             <select
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-              {...register('topicId')}
+              {...register('topicId', { valueAsNumber: true })}
               disabled={isLoadingTopics}
             >
               <option value={0} disabled>

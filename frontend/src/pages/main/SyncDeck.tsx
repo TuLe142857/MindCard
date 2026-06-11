@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import { cn } from '@/shared/utils/cn';
-import type { DeckSyncSummary, CardDiff, FieldDiff } from '@/features/saved-decks/types';
+import type { CardDiff, FieldDiff } from '@/features/saved-decks/types';
 
 import { Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';

@@ -59,14 +59,14 @@ const processQueue = (error: AxiosError<ApiErrorResponse> | null) => {
   failedQueue = [];
 };
 
-const debug_api_success = (res) => {
+const debug_api_success = (res: any) => {
   console.group(`Debug API: ${res.config?.method?.toUpperCase()} ${res.config.url}`);
   console.log('Request config:', res.config);
   console.log('Response data:', res.data);
   console.groupEnd();
 };
 
-const debug_api_error = (err) => {
+const debug_api_error = (err: any) => {
   console.group(`Debug API ERROR: ${err.config?.method?.toUpperCase()} ${err.config.url}`);
   console.log('Request:', err.config);
   console.log('Error response:', err.response?.data);
@@ -130,7 +130,7 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         } catch (refreshError) {
           isRefreshing = false;
-          processQueue(refreshError);
+          processQueue(refreshError as AxiosError<ApiErrorResponse>);
 
           // If refresh fails, force logout
           handleForcedLogout();
