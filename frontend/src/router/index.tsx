@@ -15,6 +15,7 @@ import { Explore } from '@/pages/main/Explore';
 import { Library } from '@/pages/main/Library';
 import { MyDecks } from '@/pages/main/MyDecks';
 import { Profile } from '@/pages/main/Profile';
+import { PublicProfile } from '@/pages/main/PublicProfile';
 import { DeckDetails } from '@/pages/main/DeckDetails';
 import { StudySession } from '@/pages/main/StudySession';
 import { SyncDeck } from '@/pages/main/SyncDeck';
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
           { path: '/library', element: <Library /> },
           { path: '/my-decks', element: <MyDecks /> },
           { path: '/profile', element: <Profile /> },
+          { path: '/user/:username', element: <PublicProfile /> },
           { path: '/deck/:deckId', element: <DeckDetails /> },
           { path: '/sync/:savedDeckId', element: <SyncDeck /> },
         ],
