@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Volume2 } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 import type { Card } from '@/features/decks/types';

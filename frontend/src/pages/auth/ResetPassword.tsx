@@ -59,8 +59,9 @@ export const ResetPassword: React.FC = () => {
         autoClose: 3000,
       });
       navigate('/login');
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Failed to reset password.';
+    } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const message = (error as any).response?.data?.message || 'Failed to reset password.';
       toast.update(toastId, { render: message, type: 'error', isLoading: false, autoClose: 3000 });
     } finally {
       setIsLoading(false);

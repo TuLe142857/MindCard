@@ -1,17 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Layers,
-  Star,
-  Download,
-  Globe,
-  Lock,
-  ArrowLeft,
-  Clock,
-  Plus,
-  Image as ImageIcon,
-  Music,
-} from 'lucide-react';
+import { Layers, Star, Download, Globe, Lock, ArrowLeft, Clock, Plus, Music } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import type { DeckSummary, Card } from '@/features/decks/types';
 import { useAppSelector } from '@/store/hooks';
@@ -63,7 +52,7 @@ const MOCK_CARDS: Card[] = [
 ];
 
 export const DeckDetails: React.FC = () => {
-  const { deckId } = useParams<{ deckId: string }>();
+  useParams<{ deckId: string }>();
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
 
@@ -76,6 +65,7 @@ export const DeckDetails: React.FC = () => {
   const deck = MOCK_DECK;
   const isOwner = user?.username ? true : false; // Mocking owner view for demonstration
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleAddCard = (data: any) => {
     console.log('Card data submitted:', data);
     setIsCardModalOpen(false);

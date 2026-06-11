@@ -19,7 +19,7 @@ export const fetchAuth = createAsyncThunk('auth/fetchAuth', async (_, { rejectWi
   try {
     const response = await apiClient.get<ApiSuccessResponse<User>>('/users/me');
     return response.data.data;
-  } catch (error) {
+  } catch {
     return rejectWithValue('Not authenticated');
   }
 });

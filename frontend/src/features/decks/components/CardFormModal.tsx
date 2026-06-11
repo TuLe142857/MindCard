@@ -22,7 +22,9 @@ type CardFormValues = z.infer<typeof cardSchema>;
 interface CardFormModalProps {
   isOpen: boolean;
   onClose: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: (data: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialData?: any;
   isLoading?: boolean;
 }

@@ -41,8 +41,9 @@ export const ForgotPassword: React.FC = () => {
       });
       // Navigate to reset password and pass the identity so the user doesn't have to type it again
       navigate('/reset-password', { state: { identity: data.identity } });
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Failed to send OTP.';
+    } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const message = (error as any)?.response?.data?.message || 'Failed to send OTP.';
       toast.update(toastId, { render: message, type: 'error', isLoading: false, autoClose: 3000 });
     } finally {
       setIsLoading(false);

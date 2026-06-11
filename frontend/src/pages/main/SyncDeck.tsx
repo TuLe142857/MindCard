@@ -8,7 +8,6 @@ import {
   Edit3,
   CheckCircle2,
   AlertTriangle,
-  Image as ImageIcon,
   Music,
 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
@@ -85,7 +84,7 @@ const MOCK_DIFFS: CardDiff[] = [
 ];
 
 export const SyncDeck: React.FC = () => {
-  const { savedDeckId } = useParams<{ savedDeckId: string }>();
+  useParams<{ savedDeckId: string }>();
   const navigate = useNavigate();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSynced, setIsSynced] = useState(false);

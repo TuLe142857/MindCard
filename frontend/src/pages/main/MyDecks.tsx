@@ -41,6 +41,7 @@ export const MyDecks: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleCreateDeck = (data: any) => {
     console.log('Create deck data:', data);
     // TODO: Call API to create deck

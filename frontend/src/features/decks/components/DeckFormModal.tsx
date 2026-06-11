@@ -5,7 +5,6 @@ import * as z from 'zod';
 import { X } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
-import type { DeckCreateRequest } from '../types';
 
 const deckSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters').max(100, 'Name is too long'),

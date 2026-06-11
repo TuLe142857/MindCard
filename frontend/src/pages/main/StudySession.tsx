@@ -55,7 +55,7 @@ const MOCK_STUDY_CARDS: Card[] = [
 ];
 
 export const StudySession: React.FC = () => {
-  const { savedDeckId } = useParams<{ savedDeckId: string }>();
+  useParams<{ savedDeckId: string }>();
   const navigate = useNavigate();
 
   const [currentIndex, setCurrentIndex] = useState(0);

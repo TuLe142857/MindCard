@@ -67,8 +67,9 @@ export const Register: React.FC = () => {
         autoClose: 3000,
       });
       setStep(2);
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Failed to send OTP.';
+    } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const message = (error as any).response?.data?.message || 'Failed to send OTP.';
       toast.update(toastId, { render: message, type: 'error', isLoading: false, autoClose: 3000 });
     } finally {
       setIsLoading(false);
@@ -92,8 +93,9 @@ export const Register: React.FC = () => {
         autoClose: 3000,
       });
       navigate('/login');
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Registration failed.';
+    } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const message = (error as any).response?.data?.message || 'Registration failed.';
       toast.update(toastId, { render: message, type: 'error', isLoading: false, autoClose: 3000 });
     } finally {
       setIsLoading(false);

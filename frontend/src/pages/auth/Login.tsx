@@ -9,6 +9,8 @@ import { fetchAuth } from '@/store/authSlice';
 import { useLogin } from '@/features/auth/hooks/useAuth';
 import { Input } from '@/shared/components/ui/Input';
 import { Button } from '@/shared/components/ui/Button';
+import type { ApiErrorResponse } from '@/shared/types/api';
+import { AxiosError } from 'axios';
 
 const loginSchema = z.object({
   identity: z.string().min(1, 'Username or email is required'),
@@ -48,9 +50,10 @@ export const Login: React.FC = () => {
         autoClose: 3000,
       });
       navigate(from, { replace: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
       const message =
-        error.response?.data?.message || 'Login failed. Please check your credentials.';
+        (error as AxiosError<ApiErrorResponse>).response?.data?.message ||
+        'Login failed. Please check your credentials.';
       toast.update(toastId, { render: message, type: 'error', isLoading: false, autoClose: 3000 });
     } finally {
       setIsLoading(false);
