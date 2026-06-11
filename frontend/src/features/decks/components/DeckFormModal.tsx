@@ -2,9 +2,10 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
+import { useTopics } from '@/features/topics/hooks/useTopics';
 
 const deckSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters').max(100, 'Name is too long'),
@@ -23,15 +24,6 @@ interface DeckFormModalProps {
   isLoading?: boolean;
 }
 
-// Mock topics for UI
-const MOCK_TOPICS = [
-  { id: 1, name: 'Programming' },
-  { id: 2, name: 'Languages' },
-  { id: 3, name: 'History' },
-  { id: 4, name: 'Science' },
-  { id: 5, name: 'Technology' },
-];
-
 export const DeckFormModal: React.FC<DeckFormModalProps> = ({
   isOpen,
   onClose,
@@ -39,6 +31,9 @@ export const DeckFormModal: React.FC<DeckFormModalProps> = ({
   onSubmit,
   isLoading = false,
 }) => {
+  const { data: topicsData, isLoading: isLoadingTopics } = useTopics();
+  const topics = topicsData || [];
+
   const {
     register,
     handleSubmit,
@@ -96,11 +91,12 @@ export const DeckFormModal: React.FC<DeckFormModalProps> = ({
             <select
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
               {...register('topicId')}
+              disabled={isLoadingTopics}
             >
               <option value={0} disabled>
-                Select a topic
+                {isLoadingTopics ? 'Loading topics...' : 'Select a topic'}
               </option>
-              {MOCK_TOPICS.map((topic) => (
+              {topics.map((topic) => (
                 <option key={topic.id} value={topic.id}>
                   {topic.name}
                 </option>
@@ -157,7 +153,8 @@ export const DeckFormModal: React.FC<DeckFormModalProps> = ({
             <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={isLoading}>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4 inline" /> : null}
               {initialData ? 'Save Changes' : 'Create Deck'}
             </Button>
           </div>

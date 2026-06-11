@@ -38,6 +38,8 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
 }) => {
   const [frontImagePreview, setFrontImagePreview] = useState<string | null>(null);
   const [backImagePreview, setBackImagePreview] = useState<string | null>(null);
+  const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
+  const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [frontAudioFile, setFrontAudioFile] = useState<File | null>(null);
   const [backAudioFile, setBackAudioFile] = useState<File | null>(null);
 
@@ -55,12 +57,33 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
     },
   });
 
+  React.useEffect(() => {
+    if (isOpen) {
+      reset({
+        type: initialData?.type || 'BASIC',
+        frontText: initialData?.front?.text || '',
+        backText: initialData?.back?.text || '',
+      });
+      setFrontImagePreview(initialData?.front?.imageUrl || null);
+      setBackImagePreview(initialData?.back?.imageUrl || null);
+      setFrontImageFile(null);
+      setBackImageFile(null);
+      setFrontAudioFile(null);
+      setBackAudioFile(null);
+    }
+  }, [isOpen, initialData, reset]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, side: 'front' | 'back') => {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      if (side === 'front') setFrontImagePreview(url);
-      else setBackImagePreview(url);
+      if (side === 'front') {
+        setFrontImagePreview(url);
+        setFrontImageFile(file);
+      } else {
+        setBackImagePreview(url);
+        setBackImageFile(file);
+      }
     }
   };
 
@@ -75,9 +98,9 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
   const onFormSubmit = (data: CardFormValues) => {
     const submissionData = {
       ...data,
-      frontImage: frontImagePreview, // In real app, pass the actual File object
+      frontImage: frontImageFile,
       frontAudio: frontAudioFile,
-      backImage: backImagePreview,
+      backImage: backImageFile,
       backAudio: backAudioFile,
     };
     onSubmit(submissionData);
@@ -86,6 +109,8 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
       reset();
       setFrontImagePreview(null);
       setBackImagePreview(null);
+      setFrontImageFile(null);
+      setBackImageFile(null);
       setFrontAudioFile(null);
       setBackAudioFile(null);
     }

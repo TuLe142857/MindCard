@@ -1,51 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import { DeckCard } from '@/features/decks/components/DeckCard';
 import { DeckFormModal } from '@/features/decks/components/DeckFormModal';
-import type { DeckSummary } from '@/features/decks/types';
-
-// Mock private decks
-const MOCK_PRIVATE_DECKS: DeckSummary[] = [
-  {
-    id: 101,
-    name: 'My Custom French Vocab',
-    owner: 'currentUser',
-    topic: 'Languages',
-    description: 'Words I encountered while watching French movies.',
-    visibility: 'PRIVATE',
-    totalCard: 15,
-    savedCount: 0,
-    ratingCount: 0,
-    avgRating: 0,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 102,
-    name: 'System Design Interview Prep',
-    owner: 'currentUser',
-    topic: 'Technology',
-    description: 'Key concepts for backend architecture.',
-    visibility: 'PUBLIC',
-    totalCard: 50,
-    savedCount: 5,
-    ratingCount: 1,
-    avgRating: 5.0,
-    createdAt: new Date().toISOString(),
-  },
-];
+import { useGetSelfDecks } from '@/features/users/hooks/useUsers';
+import { useCreateDeck } from '@/features/decks/hooks/useDecks';
 
 export const MyDecks: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState('');
   const navigate = useNavigate();
 
+  // Debounce search inputuu
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedTerm(searchTerm), 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch private decks using React Query hook
+  const { data, isLoading, error } = useGetSelfDecks({
+    keyword: debouncedTerm || undefined,
+  });
+
+  const { mutate: createDeck } = useCreateDeck();
+
+  const decks = data?.data || [];
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleCreateDeck = (data: any) => {
-    console.log('Create deck data:', data);
-    // TODO: Call API to create deck
-    setIsModalOpen(false);
+  const handleCreateDeck = (formData: any) => {
+    createDeck(formData, {
+      onSuccess: () => {
+        setIsModalOpen(false);
+      },
+    });
   };
 
   return (
@@ -77,12 +66,29 @@ export const MyDecks: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid of Decks */}
-      {MOCK_PRIVATE_DECKS.length > 0 ? (
+      {/* Main Content Area */}
+      {isLoading ? (
+        <div className="flex items-center justify-center flex-1 min-h-[300px]">
+          <Loader2 className="animate-spin text-blue-500" size={32} />
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] text-slate-400">
+          <p className="mb-2 text-red-400">Failed to load your decks.</p>
+          <p className="text-sm">Please try again later.</p>
+        </div>
+      ) : decks.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {MOCK_PRIVATE_DECKS.map((deck) => (
+          {decks.map((deck) => (
             <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
           ))}
+        </div>
+      ) : searchTerm ? (
+        <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] text-slate-400">
+          <div className="w-16 h-16 mb-4 rounded-full bg-slate-800/50 flex items-center justify-center">
+            <Search size={24} className="text-slate-500" />
+          </div>
+          <p className="font-medium text-slate-300">No decks found</p>
+          <p className="text-sm mt-1">No matches for "{searchTerm}".</p>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center p-12 bg-slate-900 border border-slate-800 border-dashed rounded-2xl flex-1">

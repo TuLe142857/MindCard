@@ -60,6 +60,7 @@ public class StorageService {
 
             return key;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED, e.getMessage());
         }
 
@@ -88,6 +89,7 @@ public class StorageService {
                     file.getSize()
             );
         } catch (IOException e) {
+            e.printStackTrace();
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }

@@ -1,93 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Loader2 } from 'lucide-react';
 import { DeckCard } from '@/features/decks/components/DeckCard';
-import type { DeckSummary } from '@/features/decks/types';
-
-const MOCK_DECKS: DeckSummary[] = [
-  {
-    id: 1,
-    name: 'Advanced TypeScript Patterns',
-    owner: 'JohnDoe',
-    topic: 'Programming',
-    description: 'Learn advanced type manipulation, generics, and utility types in TS.',
-    visibility: 'PUBLIC',
-    totalCard: 42,
-    savedCount: 128,
-    ratingCount: 15,
-    avgRating: 4.8,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    name: 'JLPT N3 Vocabulary',
-    owner: 'SakuraSan',
-    topic: 'Languages',
-    description: 'Essential vocabulary for passing the JLPT N3 exam.',
-    visibility: 'PUBLIC',
-    totalCard: 850,
-    savedCount: 342,
-    ratingCount: 89,
-    avgRating: 4.9,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    name: 'React Query Fundamentals',
-    owner: 'DevMaster',
-    topic: 'Programming',
-    description: 'Master server state management in React applications.',
-    visibility: 'PUBLIC',
-    totalCard: 25,
-    savedCount: 56,
-    ratingCount: 8,
-    avgRating: 4.5,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 4,
-    name: 'World History Trivia',
-    owner: 'HistoryBuff',
-    topic: 'History',
-    description: 'Fun facts and important dates from world history.',
-    visibility: 'PUBLIC',
-    totalCard: 100,
-    savedCount: 12,
-    ratingCount: 2,
-    avgRating: 5.0,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 5,
-    name: 'Basic Anatomy',
-    owner: 'MedStudent99',
-    topic: 'Science',
-    description: 'Learn the major bones and muscles of the human body.',
-    visibility: 'PUBLIC',
-    totalCard: 65,
-    savedCount: 89,
-    ratingCount: 12,
-    avgRating: 4.2,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 6,
-    name: 'AWS Solutions Architect',
-    owner: 'CloudGuru',
-    topic: 'Technology',
-    description: 'Flashcards for the AWS SAA-C03 certification exam.',
-    visibility: 'PUBLIC',
-    totalCard: 300,
-    savedCount: 500,
-    ratingCount: 120,
-    avgRating: 4.7,
-    createdAt: new Date().toISOString(),
-  },
-];
+import { useSearchDecks } from '@/features/decks/hooks/useDecks';
 
 export const Explore: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState('');
   const navigate = useNavigate();
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedTerm(searchTerm), 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch decks using React Query hook
+  const { data, isLoading, error } = useSearchDecks({
+    keyword: debouncedTerm || undefined,
+  });
+
+  const decks = data?.data || [];
 
   return (
     <div className="flex flex-col h-full gap-6">
@@ -117,12 +50,31 @@ export const Explore: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid of Decks */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {MOCK_DECKS.map((deck) => (
-          <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
-        ))}
-      </div>
+      {/* Main Content Area */}
+      {isLoading ? (
+        <div className="flex items-center justify-center flex-1 min-h-[300px]">
+          <Loader2 className="animate-spin text-blue-500" size={32} />
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] text-slate-400">
+          <p className="mb-2 text-red-400">Failed to load public decks.</p>
+          <p className="text-sm">Please try again later.</p>
+        </div>
+      ) : decks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] text-slate-400">
+          <div className="w-16 h-16 mb-4 rounded-full bg-slate-800/50 flex items-center justify-center">
+            <Search size={24} className="text-slate-500" />
+          </div>
+          <p className="font-medium text-slate-300">No decks found</p>
+          <p className="text-sm mt-1">Try adjusting your search filters.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {decks.map((deck) => (
+            <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
