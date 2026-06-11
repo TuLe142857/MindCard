@@ -58,7 +58,14 @@ export const router = createBrowserRouter([
         ],
       },
       // Focus mode routes (no MainLayout)
-      { path: '/study/:savedDeckId', element: <div className="min-h-screen bg-slate-950 p-4 md:p-8 text-slate-200"><StudySession /></div> },
+      {
+        path: '/study/:savedDeckId',
+        element: (
+          <div className="min-h-screen bg-slate-950 p-4 md:p-8 text-slate-200">
+            <StudySession />
+          </div>
+        ),
+      },
     ],
   },
   {

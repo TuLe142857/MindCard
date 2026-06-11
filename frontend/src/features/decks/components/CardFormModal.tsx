@@ -6,14 +6,16 @@ import { X, Image as ImageIcon, Music, UploadCloud } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 
 // Validation Schema (only basic text for now, files are handled separately due to complexity)
-const cardSchema = z.object({
-  type: z.enum(['BASIC', 'TYPE']),
-  frontText: z.string().max(1000, 'Text is too long').optional(),
-  backText: z.string().max(1000, 'Text is too long').optional(),
-}).refine(data => data.frontText || data.backText, {
-  message: "At least front or back text must be provided if no media is used.",
-  path: ['frontText'],
-});
+const cardSchema = z
+  .object({
+    type: z.enum(['BASIC', 'TYPE']),
+    frontText: z.string().max(1000, 'Text is too long').optional(),
+    backText: z.string().max(1000, 'Text is too long').optional(),
+  })
+  .refine((data) => data.frontText || data.backText, {
+    message: 'At least front or back text must be provided if no media is used.',
+    path: ['frontText'],
+  });
 
 type CardFormValues = z.infer<typeof cardSchema>;
 
@@ -41,7 +43,7 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm<CardFormValues>({
     resolver: zodResolver(cardSchema),
     defaultValues: {
@@ -96,7 +98,7 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
           <h2 className="text-xl font-bold text-slate-100">
             {initialData ? 'Edit Card' : 'Add New Card'}
           </h2>
-          <button 
+          <button
             onClick={onClose}
             className="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-800"
           >
@@ -105,7 +107,6 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit(onFormSubmit)} className="p-6 flex flex-col gap-8">
-          
           {/* Card Type Selector */}
           <div className="flex flex-col gap-2 border-b border-slate-800 pb-6">
             <label className="text-sm font-medium text-slate-300">Card Type</label>
@@ -122,7 +123,9 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
             {/* FRONT SIDE */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
-                <div className="w-6 h-6 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">F</div>
+                <div className="w-6 h-6 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">
+                  F
+                </div>
                 <h3 className="font-semibold text-slate-200">Front Side (Question)</h3>
               </div>
 
@@ -141,25 +144,49 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
                   <span className="text-xs text-slate-500 font-medium">Image</span>
                   <label className="relative flex flex-col items-center justify-center h-24 border-2 border-dashed border-slate-700 rounded-lg hover:bg-slate-800/50 hover:border-slate-500 transition-colors cursor-pointer overflow-hidden group">
                     {frontImagePreview ? (
-                      <img src={frontImagePreview} alt="Front preview" className="w-full h-full object-cover" />
+                      <img
+                        src={frontImagePreview}
+                        alt="Front preview"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <>
-                        <ImageIcon size={20} className="text-slate-500 mb-1 group-hover:text-blue-400" />
+                        <ImageIcon
+                          size={20}
+                          className="text-slate-500 mb-1 group-hover:text-blue-400"
+                        />
                         <span className="text-xs text-slate-400">Upload</span>
                       </>
                     )}
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageChange(e, 'front')} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleImageChange(e, 'front')}
+                    />
                   </label>
                 </div>
-                
+
                 <div className="flex flex-col gap-2">
                   <span className="text-xs text-slate-500 font-medium">Audio</span>
                   <label className="relative flex flex-col items-center justify-center h-24 border-2 border-dashed border-slate-700 rounded-lg hover:bg-slate-800/50 hover:border-slate-500 transition-colors cursor-pointer group">
-                    <Music size={20} className={frontAudioFile ? "text-blue-400 mb-1" : "text-slate-500 mb-1 group-hover:text-blue-400"} />
+                    <Music
+                      size={20}
+                      className={
+                        frontAudioFile
+                          ? 'text-blue-400 mb-1'
+                          : 'text-slate-500 mb-1 group-hover:text-blue-400'
+                      }
+                    />
                     <span className="text-xs text-slate-400 text-center px-1 truncate w-full">
                       {frontAudioFile ? frontAudioFile.name : 'Upload'}
                     </span>
-                    <input type="file" accept="audio/*" className="hidden" onChange={(e) => handleAudioChange(e, 'front')} />
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      className="hidden"
+                      onChange={(e) => handleAudioChange(e, 'front')}
+                    />
                   </label>
                 </div>
               </div>
@@ -168,7 +195,9 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
             {/* BACK SIDE */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
-                <div className="w-6 h-6 rounded bg-green-500/20 text-green-400 flex items-center justify-center font-bold text-xs">B</div>
+                <div className="w-6 h-6 rounded bg-green-500/20 text-green-400 flex items-center justify-center font-bold text-xs">
+                  B
+                </div>
                 <h3 className="font-semibold text-slate-200">Back Side (Answer)</h3>
               </div>
 
@@ -187,31 +216,55 @@ export const CardFormModal: React.FC<CardFormModalProps> = ({
                   <span className="text-xs text-slate-500 font-medium">Image</span>
                   <label className="relative flex flex-col items-center justify-center h-24 border-2 border-dashed border-slate-700 rounded-lg hover:bg-slate-800/50 hover:border-slate-500 transition-colors cursor-pointer overflow-hidden group">
                     {backImagePreview ? (
-                      <img src={backImagePreview} alt="Back preview" className="w-full h-full object-cover" />
+                      <img
+                        src={backImagePreview}
+                        alt="Back preview"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <>
-                        <ImageIcon size={20} className="text-slate-500 mb-1 group-hover:text-green-400" />
+                        <ImageIcon
+                          size={20}
+                          className="text-slate-500 mb-1 group-hover:text-green-400"
+                        />
                         <span className="text-xs text-slate-400">Upload</span>
                       </>
                     )}
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageChange(e, 'back')} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleImageChange(e, 'back')}
+                    />
                   </label>
                 </div>
-                
+
                 <div className="flex flex-col gap-2">
                   <span className="text-xs text-slate-500 font-medium">Audio</span>
                   <label className="relative flex flex-col items-center justify-center h-24 border-2 border-dashed border-slate-700 rounded-lg hover:bg-slate-800/50 hover:border-slate-500 transition-colors cursor-pointer group">
-                    <Music size={20} className={backAudioFile ? "text-green-400 mb-1" : "text-slate-500 mb-1 group-hover:text-green-400"} />
+                    <Music
+                      size={20}
+                      className={
+                        backAudioFile
+                          ? 'text-green-400 mb-1'
+                          : 'text-slate-500 mb-1 group-hover:text-green-400'
+                      }
+                    />
                     <span className="text-xs text-slate-400 text-center px-1 truncate w-full">
                       {backAudioFile ? backAudioFile.name : 'Upload'}
                     </span>
-                    <input type="file" accept="audio/*" className="hidden" onChange={(e) => handleAudioChange(e, 'back')} />
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      className="hidden"
+                      onChange={(e) => handleAudioChange(e, 'back')}
+                    />
                   </label>
                 </div>
               </div>
             </div>
           </div>
-          
+
           {errors.frontText && (
             <p className="text-sm text-red-500 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
               {errors.frontText.message}

@@ -33,7 +33,12 @@ export const ForgotPassword: React.FC = () => {
     const toastId = toast.loading('Sending OTP...');
     try {
       await forgotPasswordMutate(data);
-      toast.update(toastId, { render: 'OTP sent to your email!', type: 'success', isLoading: false, autoClose: 3000 });
+      toast.update(toastId, {
+        render: 'OTP sent to your email!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+      });
       // Navigate to reset password and pass the identity so the user doesn't have to type it again
       navigate('/reset-password', { state: { identity: data.identity } });
     } catch (error: any) {

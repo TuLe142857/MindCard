@@ -52,7 +52,7 @@ const MOCK_SAVED_DECKS: SavedDeckSummary[] = [
     dueCards: 0,
     hasUpdate: false,
     isOriginalDeckActive: true,
-  }
+  },
 ];
 
 export const Library: React.FC = () => {
@@ -93,7 +93,7 @@ export const Library: React.FC = () => {
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-          <input 
+          <input
             type="text"
             placeholder="Search in library..."
             className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
@@ -107,9 +107,9 @@ export const Library: React.FC = () => {
       {MOCK_SAVED_DECKS.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {MOCK_SAVED_DECKS.map((deck) => (
-            <SavedDeckCard 
-              key={deck.id} 
-              deck={deck} 
+            <SavedDeckCard
+              key={deck.id}
+              deck={deck}
               onClickDetails={() => navigate(`/deck/${deck.originalDeckId}`)}
               onStudyNew={() => navigate(`/study/${deck.id}?type=new`)}
               onStudyReview={() => navigate(`/study/${deck.id}?type=review`)}
@@ -126,7 +126,7 @@ export const Library: React.FC = () => {
           <p className="text-sm text-slate-500 mb-6 text-center max-w-sm">
             Go to the Explore page to find and save decks created by the community.
           </p>
-          <button 
+          <button
             onClick={() => navigate('/explore')}
             className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-[0_0_15px_rgba(37,99,235,0.3)]"
           >

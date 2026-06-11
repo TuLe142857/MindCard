@@ -41,10 +41,16 @@ export const Login: React.FC = () => {
     try {
       await loginMutate(data);
       await dispatch(fetchAuth()).unwrap();
-      toast.update(toastId, { render: 'Welcome back!', type: 'success', isLoading: false, autoClose: 3000 });
+      toast.update(toastId, {
+        render: 'Welcome back!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+      });
       navigate(from, { replace: true });
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      const message =
+        error.response?.data?.message || 'Login failed. Please check your credentials.';
       toast.update(toastId, { render: message, type: 'error', isLoading: false, autoClose: 3000 });
     } finally {
       setIsLoading(false);
@@ -54,7 +60,7 @@ export const Login: React.FC = () => {
   return (
     <div>
       <h2 className="text-2xl font-semibold text-slate-100 mb-6 text-center">Sign In</h2>
-      
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
         <Input
           label="Email or Username"
@@ -63,7 +69,7 @@ export const Login: React.FC = () => {
           {...register('identity')}
           error={errors.identity?.message}
         />
-        
+
         <div>
           <Input
             label="Password"
@@ -73,7 +79,10 @@ export const Login: React.FC = () => {
             error={errors.password?.message}
           />
           <div className="flex justify-end mt-1">
-            <Link to="/forgot-password" className="text-sm text-blue-500 hover:text-blue-400 transition-colors">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-blue-500 hover:text-blue-400 transition-colors"
+            >
               Forgot password?
             </Link>
           </div>

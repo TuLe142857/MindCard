@@ -8,15 +8,17 @@ import { useResetPassword } from '@/features/auth/hooks/useAuth';
 import { Input } from '@/shared/components/ui/Input';
 import { Button } from '@/shared/components/ui/Button';
 
-const resetPasswordSchema = z.object({
-  identity: z.string().min(1, 'Email or username is required'),
-  otp: z.string().length(6, 'OTP must be exactly 6 digits'),
-  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string().min(6, 'Please confirm your password'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const resetPasswordSchema = z
+  .object({
+    identity: z.string().min(1, 'Email or username is required'),
+    otp: z.string().length(6, 'OTP must be exactly 6 digits'),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string().min(6, 'Please confirm your password'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
@@ -24,7 +26,7 @@ export const ResetPassword: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get identity from ForgotPassword page state if available
   const initialIdentity = location.state?.identity || '';
 
@@ -50,7 +52,12 @@ export const ResetPassword: React.FC = () => {
         otp: data.otp,
         newPassword: data.newPassword,
       });
-      toast.update(toastId, { render: 'Password reset successfully! Please sign in.', type: 'success', isLoading: false, autoClose: 3000 });
+      toast.update(toastId, {
+        render: 'Password reset successfully! Please sign in.',
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+      });
       navigate('/login');
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to reset password.';
@@ -62,7 +69,9 @@ export const ResetPassword: React.FC = () => {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-slate-100 mb-6 text-center">Create New Password</h2>
+      <h2 className="text-2xl font-semibold text-slate-100 mb-6 text-center">
+        Create New Password
+      </h2>
       <p className="text-sm text-slate-400 text-center mb-6">
         Enter the OTP sent to your email and choose a new password.
       </p>

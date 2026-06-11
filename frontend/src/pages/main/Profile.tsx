@@ -4,12 +4,12 @@ import { Camera, Save, Lock, User as UserIcon } from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 
 export const Profile: React.FC = () => {
-  const { user } = useAppSelector(state => state.auth);
-  
+  const { user } = useAppSelector((state) => state.auth);
+
   const [passwords, setPasswords] = useState({
     oldPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   const handleChangePassword = (e: React.FormEvent) => {
@@ -44,7 +44,12 @@ export const Profile: React.FC = () => {
               </div>
               <label className="absolute inset-0 flex items-center justify-center bg-slate-950/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                 <Camera size={24} className="text-slate-200" />
-                <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                />
               </label>
             </div>
             <h2 className="text-xl font-bold text-slate-100">{user?.username || 'Guest'}</h2>
@@ -60,39 +65,45 @@ export const Profile: React.FC = () => {
               <Lock size={20} className="text-slate-400" />
               <h2 className="text-lg font-bold text-slate-200">Change Password</h2>
             </div>
-            
+
             <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-slate-400">Current Password</label>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={passwords.oldPassword}
-                  onChange={e => setPasswords({...passwords, oldPassword: e.target.value})}
+                  onChange={(e) => setPasswords({ ...passwords, oldPassword: e.target.value })}
                   className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-4 py-3 text-slate-100 outline-none transition-colors"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-slate-400">New Password</label>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     value={passwords.newPassword}
-                    onChange={e => setPasswords({...passwords, newPassword: e.target.value})}
+                    onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-4 py-3 text-slate-100 outline-none transition-colors"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-slate-400">Confirm New Password</label>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     value={passwords.confirmPassword}
-                    onChange={e => setPasswords({...passwords, confirmPassword: e.target.value})}
+                    onChange={(e) =>
+                      setPasswords({ ...passwords, confirmPassword: e.target.value })
+                    }
                     className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-4 py-3 text-slate-100 outline-none transition-colors"
                   />
                 </div>
               </div>
               <div className="flex justify-end mt-4">
-                <Button type="submit" className="gap-2" disabled={!passwords.oldPassword || !passwords.newPassword}>
+                <Button
+                  type="submit"
+                  className="gap-2"
+                  disabled={!passwords.oldPassword || !passwords.newPassword}
+                >
                   <Save size={16} />
                   Update Password
                 </Button>

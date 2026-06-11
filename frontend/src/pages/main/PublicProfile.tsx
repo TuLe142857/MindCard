@@ -30,7 +30,7 @@ const MOCK_PUBLIC_DECKS: DeckSummary[] = [
     ratingCount: 8,
     avgRating: 4.5,
     createdAt: new Date().toISOString(),
-  }
+  },
 ];
 
 export const PublicProfile: React.FC = () => {
@@ -39,7 +39,7 @@ export const PublicProfile: React.FC = () => {
 
   // In a real app, we would fetch user details and their public decks by username.
   const displayUsername = username || 'Unknown User';
-  const userDecks = MOCK_PUBLIC_DECKS.map(deck => ({ ...deck, owner: displayUsername }));
+  const userDecks = MOCK_PUBLIC_DECKS.map((deck) => ({ ...deck, owner: displayUsername }));
 
   return (
     <div className="flex flex-col gap-8 max-w-6xl mx-auto h-full pb-12">
@@ -47,11 +47,11 @@ export const PublicProfile: React.FC = () => {
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
         {/* Background decorative element */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        
+
         <div className="w-28 h-28 rounded-full bg-slate-950 border-4 border-slate-800 flex items-center justify-center shrink-0 z-10 shadow-xl">
           <UserIcon size={40} className="text-slate-600" />
         </div>
-        
+
         <div className="flex flex-col items-center md:items-start text-center md:text-left z-10 flex-1">
           <h1 className="text-3xl font-bold text-slate-100">{displayUsername}</h1>
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-4 text-sm text-slate-400">
@@ -72,15 +72,11 @@ export const PublicProfile: React.FC = () => {
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <h2 className="text-xl font-bold text-slate-200">Public Decks</h2>
         </div>
-        
+
         {userDecks.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {userDecks.map((deck) => (
-              <DeckCard 
-                key={deck.id} 
-                deck={deck} 
-                onClick={() => navigate(`/deck/${deck.id}`)}
-              />
+              <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
             ))}
           </div>
         ) : (

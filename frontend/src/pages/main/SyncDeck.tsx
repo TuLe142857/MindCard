@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, RefreshCw, Plus, Minus, Edit3, CheckCircle2, AlertTriangle, Image as ImageIcon, Music } from 'lucide-react';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Plus,
+  Minus,
+  Edit3,
+  CheckCircle2,
+  AlertTriangle,
+  Image as ImageIcon,
+  Music,
+} from 'lucide-react';
 import { Button } from '@/shared/components/ui/Button';
 import { cn } from '@/shared/utils/cn';
 import type { DeckSyncSummary, CardDiff, FieldDiff } from '@/features/saved-decks/types';
@@ -21,8 +31,14 @@ const MOCK_DIFFS: CardDiff[] = [
     upcomingVersion: 1,
     type: { current: null, upcoming: 'BASIC' },
     frontText: { current: null, upcoming: 'What is the largest mammal on Earth?' },
-    frontImage: { current: null, upcoming: 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Blue_Whale_001_body_bw.jpg' },
-    frontAudio: { current: null, upcoming: 'https://actions.google.com/sounds/v1/water/ocean_waves.ogg' },
+    frontImage: {
+      current: null,
+      upcoming: 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Blue_Whale_001_body_bw.jpg',
+    },
+    frontAudio: {
+      current: null,
+      upcoming: 'https://actions.google.com/sounds/v1/water/ocean_waves.ogg',
+    },
     backText: { current: null, upcoming: 'Blue Whale' },
     backImage: null,
     backAudio: null,
@@ -34,11 +50,21 @@ const MOCK_DIFFS: CardDiff[] = [
     upcomingVersion: 3,
     type: null,
     frontText: { current: 'React logo', upcoming: 'Identify this framework logo' },
-    frontImage: { current: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg', upcoming: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg' },
+    frontImage: {
+      current: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg',
+      upcoming: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg',
+    },
     frontAudio: null,
     backText: { current: 'ReactJS', upcoming: 'React' },
-    backImage: { current: null, upcoming: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/200px-React-icon.svg.png' },
-    backAudio: { current: null, upcoming: 'https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg' },
+    backImage: {
+      current: null,
+      upcoming:
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/200px-React-icon.svg.png',
+    },
+    backAudio: {
+      current: null,
+      upcoming: 'https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg',
+    },
   },
   {
     cardId: 42,
@@ -48,11 +74,14 @@ const MOCK_DIFFS: CardDiff[] = [
     type: null,
     frontText: { current: 'Old deprecated AWS service', upcoming: null },
     frontImage: null,
-    frontAudio: { current: 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg', upcoming: null },
+    frontAudio: {
+      current: 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg',
+      upcoming: null,
+    },
     backText: { current: 'Some answer', upcoming: null },
     backImage: null,
     backAudio: null,
-  }
+  },
 ];
 
 export const SyncDeck: React.FC = () => {
@@ -60,13 +89,13 @@ export const SyncDeck: React.FC = () => {
   const navigate = useNavigate();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
-  const [selectedDiffIds, setSelectedDiffIds] = useState<number[]>(MOCK_DIFFS.map(d => d.cardId));
+  const [selectedDiffIds, setSelectedDiffIds] = useState<number[]>(MOCK_DIFFS.map((d) => d.cardId));
 
   const handleSyncSelected = () => {
     if (selectedDiffIds.length === 0) return;
     setIsSyncing(true);
     // Simulate API call with selectedDiffIds
-    console.log("Syncing cards:", selectedDiffIds);
+    console.log('Syncing cards:', selectedDiffIds);
     setTimeout(() => {
       setIsSyncing(false);
       setIsSynced(true);
@@ -74,8 +103,8 @@ export const SyncDeck: React.FC = () => {
   };
 
   const toggleDiff = (id: number) => {
-    setSelectedDiffIds(prev => 
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    setSelectedDiffIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
@@ -83,27 +112,40 @@ export const SyncDeck: React.FC = () => {
     if (selectedDiffIds.length === MOCK_DIFFS.length) {
       setSelectedDiffIds([]);
     } else {
-      setSelectedDiffIds(MOCK_DIFFS.map(d => d.cardId));
+      setSelectedDiffIds(MOCK_DIFFS.map((d) => d.cardId));
     }
   };
 
   const renderMediaValue = (val: string | null, type: 'image' | 'audio', isCurrent: boolean) => {
     if (!val) return <span className="text-slate-600 italic text-xs">None</span>;
     if (type === 'image') {
-      return <div className={cn("h-16 w-16 bg-slate-900 rounded overflow-hidden border", isCurrent ? "border-slate-700 opacity-50" : "border-slate-600")}><img src={val} alt="preview" className="w-full h-full object-cover" /></div>;
+      return (
+        <div
+          className={cn(
+            'h-16 w-16 bg-slate-900 rounded overflow-hidden border',
+            isCurrent ? 'border-slate-700 opacity-50' : 'border-slate-600'
+          )}
+        >
+          <img src={val} alt="preview" className="w-full h-full object-cover" />
+        </div>
+      );
     }
     if (type === 'audio') {
       return (
-        <div className={cn("flex items-center gap-2", isCurrent ? "opacity-50" : "")}>
-           <Music size={14} className="text-slate-400" />
-           <audio controls src={val} className="h-8 max-w-[150px]" />
+        <div className={cn('flex items-center gap-2', isCurrent ? 'opacity-50' : '')}>
+          <Music size={14} className="text-slate-400" />
+          <audio controls src={val} className="h-8 max-w-[150px]" />
         </div>
       );
     }
     return null;
   };
 
-  const renderDiffField = (label: string, diff: FieldDiff | null, type: 'text' | 'image' | 'audio' = 'text') => {
+  const renderDiffField = (
+    label: string,
+    diff: FieldDiff | null,
+    type: 'text' | 'image' | 'audio' = 'text'
+  ) => {
     if (!diff) return null;
     return (
       <div className="flex flex-col gap-2 mb-4">
@@ -113,8 +155,12 @@ export const SyncDeck: React.FC = () => {
             <span className="text-[10px] text-slate-500 uppercase">Current</span>
             <div className="text-sm text-slate-400 bg-slate-950 p-3 rounded-lg border border-slate-800">
               {type === 'text' ? (
-                <span className={cn(diff.current && "line-through decoration-red-500/50")}>{diff.current || <span className="text-slate-600 italic">None</span>}</span>
-              ) : renderMediaValue(diff.current, type, true)}
+                <span className={cn(diff.current && 'line-through decoration-red-500/50')}>
+                  {diff.current || <span className="text-slate-600 italic">None</span>}
+                </span>
+              ) : (
+                renderMediaValue(diff.current, type, true)
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-1">
@@ -122,7 +168,9 @@ export const SyncDeck: React.FC = () => {
             <div className="text-sm text-slate-200 bg-green-500/10 p-3 rounded-lg border border-green-500/30">
               {type === 'text' ? (
                 <span>{diff.upcoming || <span className="text-slate-600 italic">None</span>}</span>
-              ) : renderMediaValue(diff.upcoming, type, false)}
+              ) : (
+                renderMediaValue(diff.upcoming, type, false)
+              )}
             </div>
           </div>
         </div>
@@ -137,10 +185,12 @@ export const SyncDeck: React.FC = () => {
           <div className="text-xs font-semibold text-green-400">FRONT</div>
           <div className="text-sm text-slate-300 bg-slate-950 p-3 rounded-lg border border-slate-800 flex flex-col gap-2">
             {diff.frontText?.upcoming && <p>{diff.frontText.upcoming}</p>}
-            {diff.frontImage?.upcoming && renderMediaValue(diff.frontImage.upcoming, 'image', false)}
-            {diff.frontAudio?.upcoming && renderMediaValue(diff.frontAudio.upcoming, 'audio', false)}
+            {diff.frontImage?.upcoming &&
+              renderMediaValue(diff.frontImage.upcoming, 'image', false)}
+            {diff.frontAudio?.upcoming &&
+              renderMediaValue(diff.frontAudio.upcoming, 'audio', false)}
           </div>
-          
+
           <div className="text-xs font-semibold text-green-400 mt-2">BACK</div>
           <div className="text-sm text-slate-300 bg-slate-950 p-3 rounded-lg border border-slate-800 flex flex-col gap-2">
             {diff.backText?.upcoming && <p>{diff.backText.upcoming}</p>}
@@ -177,7 +227,7 @@ export const SyncDeck: React.FC = () => {
           {renderDiffField('FRONT TEXT', diff.frontText, 'text')}
           {renderDiffField('FRONT IMAGE', diff.frontImage, 'image')}
           {renderDiffField('FRONT AUDIO', diff.frontAudio, 'audio')}
-          
+
           {renderDiffField('BACK TEXT', diff.backText, 'text')}
           {renderDiffField('BACK IMAGE', diff.backImage, 'image')}
           {renderDiffField('BACK AUDIO', diff.backAudio, 'audio')}
@@ -209,7 +259,7 @@ export const SyncDeck: React.FC = () => {
     <div className="flex flex-col gap-6 max-w-5xl mx-auto h-full pb-12">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <button 
+        <button
           onClick={() => navigate('/library')}
           className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors text-sm font-medium"
         >
@@ -220,15 +270,15 @@ export const SyncDeck: React.FC = () => {
           <Button variant="outline" onClick={() => navigate('/library')} disabled={isSyncing}>
             Cancel
           </Button>
-          <Button 
+          <Button
             className="gap-2 bg-yellow-500 hover:bg-yellow-600 text-yellow-950 font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)]"
             onClick={handleSyncSelected}
             isLoading={isSyncing}
             disabled={selectedDiffIds.length === 0}
           >
-            <RefreshCw size={16} className={cn(isSyncing && "animate-spin")} />
-            {selectedDiffIds.length === MOCK_DIFFS.length 
-              ? "Sync All Updates" 
+            <RefreshCw size={16} className={cn(isSyncing && 'animate-spin')} />
+            {selectedDiffIds.length === MOCK_DIFFS.length
+              ? 'Sync All Updates'
               : `Sync Selected (${selectedDiffIds.length})`}
           </Button>
         </div>
@@ -240,7 +290,9 @@ export const SyncDeck: React.FC = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-slate-100">Review Deck Updates</h1>
-          <p className="text-sm text-slate-400">The original author has made changes to this deck.</p>
+          <p className="text-sm text-slate-400">
+            The original author has made changes to this deck.
+          </p>
         </div>
       </div>
 
@@ -255,13 +307,15 @@ export const SyncDeck: React.FC = () => {
             <div className="text-sm text-slate-500">New Cards</div>
           </div>
         </div>
-        
+
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
             <Edit3 size={24} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-slate-100">{MOCK_SUMMARY.totalUpdatedCards}</div>
+            <div className="text-2xl font-bold text-slate-100">
+              {MOCK_SUMMARY.totalUpdatedCards}
+            </div>
             <div className="text-sm text-slate-500">Updated Cards</div>
           </div>
         </div>
@@ -271,7 +325,9 @@ export const SyncDeck: React.FC = () => {
             <Minus size={24} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-slate-100">{MOCK_SUMMARY.totalDeletedCards}</div>
+            <div className="text-2xl font-bold text-slate-100">
+              {MOCK_SUMMARY.totalDeletedCards}
+            </div>
             <div className="text-sm text-slate-500">Deleted Cards</div>
           </div>
         </div>
@@ -282,7 +338,8 @@ export const SyncDeck: React.FC = () => {
         <div className="flex items-start gap-3 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400 text-sm">
           <AlertTriangle size={20} className="shrink-0 mt-0.5" />
           <p>
-            <strong>Warning:</strong> Syncing will permanently remove deleted cards from your library, and you will lose your study progress for those specific cards.
+            <strong>Warning:</strong> Syncing will permanently remove deleted cards from your
+            library, and you will lose your study progress for those specific cards.
           </p>
         </div>
       )}
@@ -292,50 +349,64 @@ export const SyncDeck: React.FC = () => {
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <h2 className="text-lg font-bold text-slate-200">Detailed Changes</h2>
           <label className="flex items-center gap-2 cursor-pointer group">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={selectedDiffIds.length === MOCK_DIFFS.length}
               onChange={toggleAll}
               className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-blue-500/20 cursor-pointer"
             />
-            <span className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">Select All</span>
+            <span className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors">
+              Select All
+            </span>
           </label>
         </div>
-        
+
         <div className="flex flex-col gap-6">
           {MOCK_DIFFS.map((diff, index) => {
             const isSelected = selectedDiffIds.includes(diff.cardId);
             return (
-              <div 
-                key={diff.cardId} 
+              <div
+                key={diff.cardId}
                 className={cn(
-                  "flex flex-col bg-slate-900 border rounded-xl overflow-hidden transition-all duration-200",
-                  isSelected ? "border-blue-500/50 shadow-[0_0_15px_rgba(37,99,235,0.1)]" : "border-slate-800 opacity-60 hover:opacity-80"
+                  'flex flex-col bg-slate-900 border rounded-xl overflow-hidden transition-all duration-200',
+                  isSelected
+                    ? 'border-blue-500/50 shadow-[0_0_15px_rgba(37,99,235,0.1)]'
+                    : 'border-slate-800 opacity-60 hover:opacity-80'
                 )}
               >
-                <div 
+                <div
                   className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/50 cursor-pointer"
                   onClick={() => toggleDiff(diff.cardId)}
                 >
                   <div className="flex items-center gap-3">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={isSelected}
                       onChange={() => {}} // handled by parent div onClick
                       className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-blue-500/20 cursor-pointer pointer-events-none"
                     />
                     <span className="text-sm font-medium text-slate-300">Card #{index + 1}</span>
                   </div>
-                  <span className={cn(
-                    "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider",
-                    diff.changeType === 'NEW' && "bg-green-500/20 text-green-400 border border-green-500/30",
-                    diff.changeType === 'DELETED' && "bg-red-500/20 text-red-400 border border-red-500/30",
-                    diff.changeType === 'UPDATED' && "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                  )}>
+                  <span
+                    className={cn(
+                      'text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider',
+                      diff.changeType === 'NEW' &&
+                        'bg-green-500/20 text-green-400 border border-green-500/30',
+                      diff.changeType === 'DELETED' &&
+                        'bg-red-500/20 text-red-400 border border-red-500/30',
+                      diff.changeType === 'UPDATED' &&
+                        'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                    )}
+                  >
                     {diff.changeType}
                   </span>
                 </div>
-                <div className={cn("p-5 transition-opacity duration-200", !isSelected && "opacity-40 grayscale-[50%]")}>
+                <div
+                  className={cn(
+                    'p-5 transition-opacity duration-200',
+                    !isSelected && 'opacity-40 grayscale-[50%]'
+                  )}
+                >
                   {renderDiffContent(diff)}
                 </div>
               </div>

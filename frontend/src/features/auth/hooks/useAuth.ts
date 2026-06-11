@@ -7,14 +7,20 @@ import {
   forgotPassword,
   resetPassword,
 } from '../api/authApi';
-import type { LoginRequest, RegisterOtpRequest, RegisterCompleteRequest, ForgotPasswordRequest, ResetPasswordRequest } from '../types';
+import type {
+  LoginRequest,
+  RegisterOtpRequest,
+  RegisterCompleteRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from '../types';
 import { useAppDispatch } from '@/store/hooks';
 import { clearCredentials } from '@/store/authSlice';
 import { useNavigate } from 'react-router-dom';
 
 /**
  * Hook to handle user login.
- * 
+ *
  * @returns React Query mutation object for login.
  */
 export const useLogin = () => {

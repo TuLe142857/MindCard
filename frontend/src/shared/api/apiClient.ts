@@ -60,18 +60,14 @@ const processQueue = (error: AxiosError<ApiErrorResponse> | null) => {
 };
 
 const debug_api_success = (res) => {
-  console.group(
-    `Debug API: ${res.config?.method?.toUpperCase()} ${res.config.url}`
-  );
+  console.group(`Debug API: ${res.config?.method?.toUpperCase()} ${res.config.url}`);
   console.log('Request config:', res.config);
   console.log('Response data:', res.data);
   console.groupEnd();
 };
 
 const debug_api_error = (err) => {
-  console.group(
-    `Debug API ERROR: ${err.config?.method?.toUpperCase()} ${err.config.url}`
-  );
+  console.group(`Debug API ERROR: ${err.config?.method?.toUpperCase()} ${err.config.url}`);
   console.log('Request:', err.config);
   console.log('Error response:', err.response?.data);
   console.log('Error message:', err.message);

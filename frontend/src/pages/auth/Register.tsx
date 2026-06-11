@@ -14,16 +14,18 @@ const emailSchema = z.object({
 });
 
 // Schema for Step 2
-const registerSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string().min(6, 'Please confirm your password'),
-  otp: z.string().length(6, 'OTP must be exactly 6 digits'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const registerSchema = z
+  .object({
+    email: z.string().email('Invalid email address'),
+    username: z.string().min(3, 'Username must be at least 3 characters'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string().min(6, 'Please confirm your password'),
+    otp: z.string().length(6, 'OTP must be exactly 6 digits'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type EmailFormValues = z.infer<typeof emailSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -58,7 +60,12 @@ export const Register: React.FC = () => {
     const toastId = toast.loading('Sending OTP...');
     try {
       await registerRequestMutate({ email: data.email });
-      toast.update(toastId, { render: 'OTP sent to your email!', type: 'success', isLoading: false, autoClose: 3000 });
+      toast.update(toastId, {
+        render: 'OTP sent to your email!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+      });
       setStep(2);
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to send OTP.';
@@ -78,7 +85,12 @@ export const Register: React.FC = () => {
         password: data.password,
         otp: data.otp,
       });
-      toast.update(toastId, { render: 'Registration successful! Please sign in.', type: 'success', isLoading: false, autoClose: 3000 });
+      toast.update(toastId, {
+        render: 'Registration successful! Please sign in.',
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+      });
       navigate('/login');
     } catch (error: any) {
       const message = error.response?.data?.message || 'Registration failed.';
@@ -91,7 +103,7 @@ export const Register: React.FC = () => {
   return (
     <div>
       <h2 className="text-2xl font-semibold text-slate-100 mb-6 text-center">Create an Account</h2>
-      
+
       {step === 1 ? (
         <form onSubmit={handleEmailSubmit(onEmailSubmit)} className="space-y-4">
           <Input
@@ -109,7 +121,7 @@ export const Register: React.FC = () => {
         <form onSubmit={handleSubmit(onRegisterSubmit)} className="space-y-2">
           {/* Hidden email input to pass it to the final submit */}
           <input type="hidden" value={getEmailValues().email} {...register('email')} />
-          
+
           <p className="text-sm text-slate-400 text-center mb-4 pb-2 border-b border-slate-800">
             OTP sent to <span className="font-medium text-slate-300">{getEmailValues().email}</span>
           </p>

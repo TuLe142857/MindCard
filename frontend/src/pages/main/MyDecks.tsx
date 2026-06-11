@@ -33,7 +33,7 @@ const MOCK_PRIVATE_DECKS: DeckSummary[] = [
     ratingCount: 1,
     avgRating: 5.0,
     createdAt: new Date().toISOString(),
-  }
+  },
 ];
 
 export const MyDecks: React.FC = () => {
@@ -55,11 +55,11 @@ export const MyDecks: React.FC = () => {
           <h1 className="text-2xl font-bold text-slate-100 mb-1">My Decks</h1>
           <p className="text-sm text-slate-400">Manage the decks you have created.</p>
         </div>
-        
+
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-            <input 
+            <input
               type="text"
               placeholder="Search my decks..."
               className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
@@ -67,11 +67,8 @@ export const MyDecks: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
-          <Button 
-            className="flex-shrink-0"
-            onClick={() => setIsModalOpen(true)}
-          >
+
+          <Button className="flex-shrink-0" onClick={() => setIsModalOpen(true)}>
             <Plus size={18} className="mr-2" />
             <span className="hidden sm:inline">Create Deck</span>
             <span className="sm:hidden">Create</span>
@@ -83,11 +80,7 @@ export const MyDecks: React.FC = () => {
       {MOCK_PRIVATE_DECKS.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {MOCK_PRIVATE_DECKS.map((deck) => (
-            <DeckCard 
-              key={deck.id} 
-              deck={deck} 
-              onClick={() => navigate(`/deck/${deck.id}`)}
-            />
+            <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
           ))}
         </div>
       ) : (
@@ -99,14 +92,12 @@ export const MyDecks: React.FC = () => {
           <p className="text-sm text-slate-500 mb-6 text-center max-w-sm">
             You haven't created any decks yet. Create your first deck to start adding flashcards.
           </p>
-          <Button onClick={() => setIsModalOpen(true)}>
-            Create New Deck
-          </Button>
+          <Button onClick={() => setIsModalOpen(true)}>Create New Deck</Button>
         </div>
       )}
 
       {/* Create Deck Modal */}
-      <DeckFormModal 
+      <DeckFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateDeck}

@@ -9,8 +9,8 @@ export const NotFound: React.FC = () => {
       <p className="text-slate-400 mb-8 max-w-md mx-auto">
         The page you are looking for doesn't exist or has been moved.
       </p>
-      <Link 
-        to="/" 
+      <Link
+        to="/"
         className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
       >
         Go Home
