@@ -9,13 +9,13 @@ services:
   # add profile to disable build as default
   # frontend will be deploy with vervel
   frontend:
-    profiles: ["exclude"]
+    profiles: ["exclude", "frontend"]
   
   # when using cloud object service instead of local host MinIO
   # uncomment the following config
   # add profile to s3 to disable build as default
   s3:
-    profiles: ["exclude"]
+    profiles: ["exclude", "s3"]
     volumes:
       - s3-data-prod:/data
 
