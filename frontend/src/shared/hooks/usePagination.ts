@@ -10,9 +10,7 @@ export interface UsePaginationOptions {
  * ready-to-use queryParams for API requests, along with handler
  * functions compatible with the `<Pagination />` component.
  */
-export const usePagination = (options: UsePaginationOptions = {}) => {
-  const { initialPage = 1, initialLimit = 10 } = options;
-
+export const usePagination = ({ initialPage = 1, initialLimit = 5 }: UsePaginationOptions = {}) => {
   const [page, setPage] = useState(initialPage);
   const [limit, setLimit] = useState(initialLimit);
 

@@ -5,6 +5,8 @@ import { SavedDeckCard } from '@/features/saved-decks/components/SavedDeckCard';
 
 import { useGetSavedDecks } from '@/features/users/hooks/useUsers';
 import { Loader2 } from 'lucide-react';
+import Pagination from '@/shared/components/ui/Pagination';
+import { usePagination } from '@/shared/hooks/usePagination';
 
 export const Library: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,13 +19,20 @@ export const Library: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  const { page, limit, setPage, nextPage, previousPage } = usePagination();
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [debouncedTerm, setPage]);
+
   const { data, isLoading } = useGetSavedDecks({
     keyword: debouncedTerm,
-    page: 1,
-    limit: 100,
+    page,
+    limit,
   });
 
   const savedDecks = data?.data || [];
+  const totalPages = data?.meta?.totalPages || 0;
 
   // Tính toán tổng số thẻ cần học hôm nay
   const totalCardsToStudyToday = savedDecks.reduce(
@@ -75,17 +84,27 @@ export const Library: React.FC = () => {
           <Loader2 className="animate-spin text-blue-500" size={40} />
         </div>
       ) : savedDecks.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {savedDecks.map((deck) => (
-            <SavedDeckCard
-              key={deck.id}
-              deck={deck}
-              onClickDetails={() => navigate(`/deck/${deck.originalDeckId}`)}
-              onStudyNew={() => navigate(`/study/${deck.id}?type=new`)}
-              onStudyReview={() => navigate(`/study/${deck.id}?type=review`)}
-              onSyncUpdate={() => navigate(`/sync/${deck.id}`)}
-            />
-          ))}
+        <div className="flex flex-col gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {savedDecks.map((deck) => (
+              <SavedDeckCard
+                key={deck.id}
+                deck={deck}
+                onClickDetails={() => navigate(`/deck/${deck.originalDeckId}`)}
+                onStudyNew={() => navigate(`/study/${deck.id}?type=new`)}
+                onStudyReview={() => navigate(`/study/${deck.id}?type=review`)}
+                onSyncUpdate={() => navigate(`/sync/${deck.id}`)}
+              />
+            ))}
+          </div>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onNextPage={nextPage}
+            onPreviousPage={previousPage}
+            onSetPage={setPage}
+          />
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center p-12 bg-slate-900 border border-slate-800 border-dashed rounded-2xl flex-1">

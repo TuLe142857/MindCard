@@ -12,10 +12,7 @@ export const Explore: React.FC = () => {
   const [debouncedTerm, setDebouncedTerm] = useState('');
   const navigate = useNavigate();
 
-  const { page, limit, setPage, nextPage, previousPage } = usePagination({
-    initialPage: 1,
-    initialLimit: 5,
-  });
+  const { page, limit, setPage, nextPage, previousPage } = usePagination();
 
   // Debounce search input
   useEffect(() => {
