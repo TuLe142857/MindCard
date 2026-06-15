@@ -9,6 +9,8 @@ import {
   useGetSelfDecks,
   useUpdateAvatar,
 } from '@/features/users/hooks/useUsers';
+import Pagination from '@/shared/components/ui/Pagination';
+import { usePagination } from '@/shared/hooks/usePagination';
 
 export const Profile: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -17,6 +19,8 @@ export const Profile: React.FC = () => {
 
   const isSelf = currentUser?.username === username;
 
+  const { page, limit, setPage, nextPage, previousPage } = usePagination();
+
   // If visiting other user's profile
   const { data: publicProfileData, isLoading: isLoadingPublicProfile } = useGetUserProfile(
     username || '',
@@ -24,13 +28,13 @@ export const Profile: React.FC = () => {
   );
   const { data: publicDecksData, isLoading: isLoadingPublicDecks } = useGetUserDecks(
     username || '',
-    undefined,
+    { page, limit },
     { enabled: !isSelf }
   );
 
   // If visiting self profile
   const { data: selfDecksData, isLoading: isLoadingSelfDecks } = useGetSelfDecks(
-    {},
+    { page, limit },
     { enabled: isSelf }
   );
   const { mutate: updateAvatar } = useUpdateAvatar();
@@ -44,6 +48,9 @@ export const Profile: React.FC = () => {
 
   const displayUser = isSelf ? currentUser : publicProfileData;
   const decks = isSelf ? selfDecksData?.data : publicDecksData?.data;
+  const totalPages = isSelf
+    ? (selfDecksData?.meta?.totalPages || 0)
+    : (publicDecksData?.meta?.totalPages || 0);
   const isLoading = isSelf ? isLoadingSelfDecks : isLoadingPublicProfile || isLoadingPublicDecks;
 
   if (!displayUser && !isLoading) {
@@ -118,10 +125,20 @@ export const Profile: React.FC = () => {
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : decks && decks.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {decks.map((deck) => (
-              <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
-            ))}
+          <div className="flex flex-col gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {decks.map((deck) => (
+                <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
+              ))}
+            </div>
+
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
+              onSetPage={setPage}
+            />
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-slate-800 rounded-2xl bg-slate-900/50 text-center">
