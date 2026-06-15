@@ -46,10 +46,11 @@ export const useUpdateAvatar = () => {
  * @param params - Optional query parameters for pagination and filtering.
  * @returns React Query object containing paginated deck summaries.
  */
-export const useGetSelfDecks = (params?: DeckQueryRequest) => {
+export const useGetSelfDecks = (params?: DeckQueryRequest, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: userKeys.myDecks(params),
     queryFn: () => getSelfDecks(params),
+    ...options,
   });
 };
 
@@ -59,10 +60,11 @@ export const useGetSelfDecks = (params?: DeckQueryRequest) => {
  * @param params - Optional query parameters for pagination and filtering.
  * @returns React Query object containing paginated saved deck summaries.
  */
-export const useGetSavedDecks = (params?: SavedDeckQueryRequest) => {
+export const useGetSavedDecks = (params?: SavedDeckQueryRequest, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: userKeys.mySavedDecks(params),
     queryFn: () => getSavedDecks(params),
+    ...options,
   });
 };
 
@@ -72,11 +74,11 @@ export const useGetSavedDecks = (params?: SavedDeckQueryRequest) => {
  * @param username - The username to lookup.
  * @returns React Query object containing the public profile data.
  */
-export const useGetUserProfile = (username: string) => {
+export const useGetUserProfile = (username: string, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: userKeys.profile(username),
     queryFn: () => getUserProfile(username),
-    enabled: !!username,
+    enabled: !!username && (options?.enabled ?? true),
   });
 };
 
@@ -87,10 +89,10 @@ export const useGetUserProfile = (username: string) => {
  * @param params - Optional query parameters for pagination and filtering.
  * @returns React Query object containing paginated deck summaries.
  */
-export const useGetUserDecks = (username: string, params?: DeckQueryRequest) => {
+export const useGetUserDecks = (username: string, params?: DeckQueryRequest, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: userKeys.userDecks(username, params),
     queryFn: () => getUserDecks(username, params),
-    enabled: !!username,
+    enabled: !!username && (options?.enabled ?? true),
   });
 };

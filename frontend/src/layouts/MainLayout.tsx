@@ -104,7 +104,7 @@ export const MainLayout: React.FC = () => {
                 <p className="text-xs text-slate-500 truncate">{user?.email}</p>
               </div>
               <Link
-                to="/profile"
+                to={`/users/${user?.username}`}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
                 onClick={() => setIsProfileDropdownOpen(false)}
               >
