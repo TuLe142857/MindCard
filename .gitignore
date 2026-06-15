@@ -1,5 +1,5 @@
 .vscode/
 .idea/
-.env
-!.env.example
+.env*
+!.env.*example
 .antigravitycli/

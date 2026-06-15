@@ -1,8 +1,20 @@
 services:    
+  frontend:
+    profiles: ["frontend"]
+  
+
+  backend:
+    profiles: ["backend"]
+
+
   db:
     volumes:
       - db_data_dev:/var/lib/postgresql/18/docker
-  
+
+
+  redis:
+    volumes:
+      - redis-data-dev:/data
 
   s3:
     volumes:
@@ -20,15 +32,16 @@ services:
 
   # Redis web UI for debug, for development environment only
   redis-insight:
-      image: redis/redisinsight:latest
-      restart: unless-stopped
-      ports:
-        - "127.0.0.1:${REDIS_INSIGHT_PORT:-5540}:5540"
-      volumes:
-        - redis-insight-data-dev:/data
+    image: redis/redisinsight:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${REDIS_INSIGHT_PORT:-5540}:5540"
+    volumes:
+      - redis-insight-data-dev:/data
 
   
 volumes:
   db_data_dev:
   s3_data_dev:
+  redis-data-dev:
   redis-insight-data-dev:

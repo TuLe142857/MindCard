@@ -1,0 +1,33 @@
+services:
+  clouflare:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped 
+    environment:
+      TUNNEL_TOKEN: ${CLOUD_FLARED_TUNNEL_TOKEN:?Variable is not set or empty}
+    command: tunnel run
+
+  # add profile to disable build as default
+  # frontend will be deploy with vervel
+  frontend:
+    profiles: ["exclude"]
+  
+  # when using cloud object service instead of local host MinIO
+  # uncomment the following config
+  # add profile to s3 to disable build as default
+  s3:
+    profiles: ["exclude"]
+    volumes:
+      - s3-data-prod:/data
+
+  db:
+    volumes:
+      - db-data-prod:/var/lib/postgresql/18/docker
+
+  redis:
+    volumes:
+      - redis-data-prod:/data
+
+volumes:
+  s3-data-prod:
+  db-data-prod:
+  redis-data-prod:

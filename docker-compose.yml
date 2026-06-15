@@ -30,7 +30,6 @@ x-backend-env: &backend-env
 
 services:
   frontend:
-    profiles: ["frontend"]
     build:
       context: ./frontend
     restart: unless-stopped
@@ -39,7 +38,6 @@ services:
 
 
   backend:
-    profiles: ["backend"]
     build:
       context: ./backend
     restart: unless-stopped

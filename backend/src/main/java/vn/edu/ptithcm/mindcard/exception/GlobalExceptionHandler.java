@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import vn.edu.ptithcm.mindcard.dto.response.common.APIResponse;
+import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(AppException.class)
     public ResponseEntity<APIResponse<Void>> handleAppException(AppException exc){
@@ -50,6 +52,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<APIResponse<Void>> handleUnexpectedException(Exception exc){
+        log.error("Unexpected exception occurred", exc);
         exc.printStackTrace();
         APIResponse<Void> response = APIResponse.error(ErrorCode.SERVER_ERROR, "Something went wrong: " + exc.getMessage());
         return ResponseEntity.status(500).body(response);

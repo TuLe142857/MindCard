@@ -24,7 +24,7 @@ public record S3Properties(
         }
 
         if (region == null || region.isBlank()){
-            region = "ap-southeast-1";
+            region = "auto";
         }
     }
 }

@@ -7,6 +7,8 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/build_backend.yml'
+    tags:
+      - v*
 
 env:
   REGISTRY: ghcr.io
