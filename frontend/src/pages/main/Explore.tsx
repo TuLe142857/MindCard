@@ -4,10 +4,18 @@ import { Search, Filter, Loader2 } from 'lucide-react';
 import { DeckCard } from '@/features/decks/components/DeckCard';
 import { useSearchDecks } from '@/features/decks/hooks/useDecks';
 
+import Pagination from '@/shared/components/ui/Pagination';
+import { usePagination } from '@/shared/hooks/usePagination';
+
 export const Explore: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState('');
   const navigate = useNavigate();
+
+  const { page, limit, setPage, nextPage, previousPage } = usePagination({
+    initialPage: 1,
+    initialLimit: 5,
+  });
 
   // Debounce search input
   useEffect(() => {
@@ -15,12 +23,20 @@ export const Explore: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Reset page when search term changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedTerm, setPage]);
+
   // Fetch decks using React Query hook
   const { data, isLoading, error } = useSearchDecks({
     keyword: debouncedTerm || undefined,
+    page,
+    limit,
   });
 
   const decks = data?.data || [];
+  const totalPages = data?.meta?.totalPages || 0;
 
   return (
     <div className="flex flex-col h-full gap-6">
@@ -69,10 +85,20 @@ export const Explore: React.FC = () => {
           <p className="text-sm mt-1">Try adjusting your search filters.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {decks.map((deck) => (
-            <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
-          ))}
+        <div className="flex flex-col gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {decks.map((deck) => (
+              <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
+            ))}
+          </div>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onNextPage={nextPage}
+            onPreviousPage={previousPage}
+            onSetPage={setPage}
+          />
         </div>
       )}
     </div>

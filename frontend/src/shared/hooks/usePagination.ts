@@ -6,8 +6,8 @@ export interface UsePaginationOptions {
 }
 
 /**
- * A shared hook to manage pagination state (page, limit) and provide 
- * ready-to-use queryParams for API requests, along with handler 
+ * A shared hook to manage pagination state (page, limit) and provide
+ * ready-to-use queryParams for API requests, along with handler
  * functions compatible with the `<Pagination />` component.
  */
 export const usePagination = (options: UsePaginationOptions = {}) => {
@@ -18,7 +18,7 @@ export const usePagination = (options: UsePaginationOptions = {}) => {
 
   const nextPage = useCallback(() => setPage((prev) => prev + 1), []);
   const previousPage = useCallback(() => setPage((prev) => Math.max(prev - 1, 1)), []);
-  
+
   const resetPagination = useCallback(() => {
     setPage(initialPage);
     setLimit(initialLimit);
