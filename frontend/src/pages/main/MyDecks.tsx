@@ -6,6 +6,8 @@ import { DeckCard } from '@/features/decks/components/DeckCard';
 import { DeckFormModal } from '@/features/decks/components/DeckFormModal';
 import { useGetSelfDecks } from '@/features/users/hooks/useUsers';
 import { useCreateDeck } from '@/features/decks/hooks/useDecks';
+import Pagination from '@/shared/components/ui/Pagination';
+import { usePagination } from '@/shared/hooks/usePagination';
 
 export const MyDecks: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,14 +21,23 @@ export const MyDecks: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  const { page, limit, setPage, nextPage, previousPage } = usePagination();
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedTerm, setPage]);
+
   // Fetch private decks using React Query hook
   const { data, isLoading, error } = useGetSelfDecks({
     keyword: debouncedTerm || undefined,
+    page,
+    limit,
   });
 
   const { mutate: createDeck } = useCreateDeck();
 
   const decks = data?.data || [];
+  const totalPages = data?.meta?.totalPages || 0;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleCreateDeck = (formData: any) => {
@@ -77,10 +88,20 @@ export const MyDecks: React.FC = () => {
           <p className="text-sm">Please try again later.</p>
         </div>
       ) : decks.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {decks.map((deck) => (
-            <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
-          ))}
+        <div className="flex flex-col gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {decks.map((deck) => (
+              <DeckCard key={deck.id} deck={deck} onClick={() => navigate(`/deck/${deck.id}`)} />
+            ))}
+          </div>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onNextPage={nextPage}
+            onPreviousPage={previousPage}
+            onSetPage={setPage}
+          />
         </div>
       ) : searchTerm ? (
         <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] text-slate-400">
