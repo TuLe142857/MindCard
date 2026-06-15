@@ -16,34 +16,40 @@ public interface CardRepository extends JpaRepository<Card, Integer> {
 
     @Query(value = """
     SELECT c AS card, cp AS progress FROM Card c
+    LEFT JOIN c.latestVersion clv
     LEFT JOIN UserCardProgress cp ON cp.card = c AND cp.user.id = :userId
+    LEFT JOIN cp.cardVersion cpv
     WHERE c.deck.id = :deckId
       AND (
-          (c.isDeleted = false AND cp.id IS NULL)
-          OR (c.isDeleted = false AND cp.cardVersion.version < c.latestVersion.version)
-          OR (c.isDeleted = true AND cp.id IS NOT NULL)
+          (c.isDeleted = false AND cp IS NULL)
+          OR (c.isDeleted = false AND cpv.version < clv.version)
+          OR (c.isDeleted = true AND cp IS NOT NULL)
       )
     """,
             countQuery = """
     SELECT COUNT(c) FROM Card c
+    LEFT JOIN c.latestVersion clv
     LEFT JOIN UserCardProgress cp ON cp.card = c AND cp.user.id = :userId
+    LEFT JOIN cp.cardVersion cpv
     WHERE c.deck.id = :deckId
       AND (
-          (c.isDeleted = false AND cp.id IS NULL)
-          OR (c.isDeleted = false AND cp.cardVersion.version < c.latestVersion.version)
-          OR (c.isDeleted = true AND cp.id IS NOT NULL)
+          (c.isDeleted = false AND cp IS NULL)
+          OR (c.isDeleted = false AND cpv.version < clv.version)
+          OR (c.isDeleted = true AND cp IS NOT NULL)
       )
     """)
     Page<CardSyncProjection> findOutOfSyncCards(int userId, int deckId, Pageable pageable);
 
     @Query(value = """
     SELECT c AS card, cp AS progress FROM Card c
+    LEFT JOIN c.latestVersion clv
     LEFT JOIN UserCardProgress cp ON cp.card = c AND cp.user.id = :userId
+    LEFT JOIN cp.cardVersion cpv
     WHERE c.deck.id = :deckId AND c.id IN :cardIds
       AND (
-          (c.isDeleted = false AND cp.id IS NULL)
-          OR (c.isDeleted = false AND cp.cardVersion.version < c.latestVersion.version)
-          OR (c.isDeleted = true AND cp.id IS NOT NULL)
+          (c.isDeleted = false AND cp IS NULL)
+          OR (c.isDeleted = false AND cpv.version < clv.version)
+          OR (c.isDeleted = true AND cp IS NOT NULL)
       )
     """)
     List<CardSyncProjection> findOutOfSyncCardsByIds(int userId, int deckId, java.util.List<Integer> cardIds);
