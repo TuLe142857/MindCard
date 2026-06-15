@@ -60,7 +60,10 @@ export const useGetSelfDecks = (params?: DeckQueryRequest, options?: { enabled?:
  * @param params - Optional query parameters for pagination and filtering.
  * @returns React Query object containing paginated saved deck summaries.
  */
-export const useGetSavedDecks = (params?: SavedDeckQueryRequest, options?: { enabled?: boolean }) => {
+export const useGetSavedDecks = (
+  params?: SavedDeckQueryRequest,
+  options?: { enabled?: boolean }
+) => {
   return useQuery({
     queryKey: userKeys.mySavedDecks(params),
     queryFn: () => getSavedDecks(params),
@@ -89,7 +92,11 @@ export const useGetUserProfile = (username: string, options?: { enabled?: boolea
  * @param params - Optional query parameters for pagination and filtering.
  * @returns React Query object containing paginated deck summaries.
  */
-export const useGetUserDecks = (username: string, params?: DeckQueryRequest, options?: { enabled?: boolean }) => {
+export const useGetUserDecks = (
+  username: string,
+  params?: DeckQueryRequest,
+  options?: { enabled?: boolean }
+) => {
   return useQuery({
     queryKey: userKeys.userDecks(username, params),
     queryFn: () => getUserDecks(username, params),

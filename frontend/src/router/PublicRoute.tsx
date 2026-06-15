@@ -5,6 +5,7 @@ import { useAppSelector } from '../store/hooks';
 export const PublicRoute: React.FC = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
+  // Redirect authenticated users away from auth pages to /explore
   if (isAuthenticated) {
     return <Navigate to="/explore" replace />;
   }

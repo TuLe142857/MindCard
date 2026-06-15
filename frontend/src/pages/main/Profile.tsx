@@ -3,7 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/store/hooks';
 import { User as UserIcon, BookOpen, Calendar, Camera } from 'lucide-react';
 import { DeckCard } from '@/features/decks/components/DeckCard';
-import { useGetUserProfile, useGetUserDecks, useGetSelfDecks, useUpdateAvatar } from '@/features/users/hooks/useUsers';
+import {
+  useGetUserProfile,
+  useGetUserDecks,
+  useGetSelfDecks,
+  useUpdateAvatar,
+} from '@/features/users/hooks/useUsers';
 
 export const Profile: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -13,11 +18,21 @@ export const Profile: React.FC = () => {
   const isSelf = currentUser?.username === username;
 
   // If visiting other user's profile
-  const { data: publicProfileData, isLoading: isLoadingPublicProfile } = useGetUserProfile(username || '', { enabled: !isSelf });
-  const { data: publicDecksData, isLoading: isLoadingPublicDecks } = useGetUserDecks(username || '', undefined, { enabled: !isSelf });
+  const { data: publicProfileData, isLoading: isLoadingPublicProfile } = useGetUserProfile(
+    username || '',
+    { enabled: !isSelf }
+  );
+  const { data: publicDecksData, isLoading: isLoadingPublicDecks } = useGetUserDecks(
+    username || '',
+    undefined,
+    { enabled: !isSelf }
+  );
 
   // If visiting self profile
-  const { data: selfDecksData, isLoading: isLoadingSelfDecks } = useGetSelfDecks({}, { enabled: isSelf });
+  const { data: selfDecksData, isLoading: isLoadingSelfDecks } = useGetSelfDecks(
+    {},
+    { enabled: isSelf }
+  );
   const { mutate: updateAvatar } = useUpdateAvatar();
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +44,7 @@ export const Profile: React.FC = () => {
 
   const displayUser = isSelf ? currentUser : publicProfileData;
   const decks = isSelf ? selfDecksData?.data : publicDecksData?.data;
-  const isLoading = isSelf ? isLoadingSelfDecks : (isLoadingPublicProfile || isLoadingPublicDecks);
+  const isLoading = isSelf ? isLoadingSelfDecks : isLoadingPublicProfile || isLoadingPublicDecks;
 
   if (!displayUser && !isLoading) {
     return (
@@ -51,7 +66,11 @@ export const Profile: React.FC = () => {
         <div className="relative group z-10 shrink-0">
           <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-slate-800 bg-slate-950 flex items-center justify-center shadow-xl">
             {displayUser?.avatarUrl ? (
-              <img src={displayUser.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              <img
+                src={displayUser.avatarUrl}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <UserIcon size={40} className="text-slate-600" />
             )}
@@ -70,7 +89,9 @@ export const Profile: React.FC = () => {
         </div>
 
         <div className="flex flex-col items-center md:items-start text-center md:text-left z-10 flex-1">
-          <h1 className="text-3xl font-bold text-slate-100">{displayUser?.username || 'Loading...'}</h1>
+          <h1 className="text-3xl font-bold text-slate-100">
+            {displayUser?.username || 'Loading...'}
+          </h1>
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-4 text-sm text-slate-400">
             <div className="flex items-center gap-1.5 bg-slate-950/50 px-3 py-1.5 rounded-full border border-slate-800/50">
               <BookOpen size={14} className="text-blue-400" />
@@ -87,7 +108,9 @@ export const Profile: React.FC = () => {
       {/* Decks List */}
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-          <h2 className="text-xl font-bold text-slate-200">{isSelf ? 'My Decks' : 'Public Decks'}</h2>
+          <h2 className="text-xl font-bold text-slate-200">
+            {isSelf ? 'My Decks' : 'Public Decks'}
+          </h2>
         </div>
 
         {isLoading ? (

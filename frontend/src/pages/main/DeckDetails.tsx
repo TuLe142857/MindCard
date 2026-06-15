@@ -18,7 +18,13 @@ import { useAppSelector } from '@/store/hooks';
 import { CardFormModal } from '@/features/decks/components/CardFormModal';
 import { DeckFormModal } from '@/features/decks/components/DeckFormModal';
 import { useTopics } from '@/features/topics/hooks/useTopics';
-import { useDeckDetails, useDeckCards, useSaveDeck, useBatchAddCards, useUpdateDeck } from '@/features/decks/hooks/useDecks';
+import {
+  useDeckDetails,
+  useDeckCards,
+  useSaveDeck,
+  useBatchAddCards,
+  useUpdateDeck,
+} from '@/features/decks/hooks/useDecks';
 import { useUpdateCard, useUpdateCardMedia } from '@/features/cards/hooks/useCards';
 import { toast } from 'react-toastify';
 
@@ -58,10 +64,30 @@ export const DeckDetails: React.FC = () => {
           data: { type: data.type, frontText: data.frontText, backText: data.backText },
         });
 
-        if (data.frontImage) await updateCardMedia({ cardId: editingCard.id, slot: 'front-image', file: data.frontImage });
-        if (data.backImage) await updateCardMedia({ cardId: editingCard.id, slot: 'back-image', file: data.backImage });
-        if (data.frontAudio) await updateCardMedia({ cardId: editingCard.id, slot: 'front-audio', file: data.frontAudio });
-        if (data.backAudio) await updateCardMedia({ cardId: editingCard.id, slot: 'back-audio', file: data.backAudio });
+        if (data.frontImage)
+          await updateCardMedia({
+            cardId: editingCard.id,
+            slot: 'front-image',
+            file: data.frontImage,
+          });
+        if (data.backImage)
+          await updateCardMedia({
+            cardId: editingCard.id,
+            slot: 'back-image',
+            file: data.backImage,
+          });
+        if (data.frontAudio)
+          await updateCardMedia({
+            cardId: editingCard.id,
+            slot: 'front-audio',
+            file: data.frontAudio,
+          });
+        if (data.backAudio)
+          await updateCardMedia({
+            cardId: editingCard.id,
+            slot: 'back-audio',
+            file: data.backAudio,
+          });
 
         toast.update(toastId, {
           type: 'success',
@@ -168,7 +194,7 @@ export const DeckDetails: React.FC = () => {
 
   if (isLoadingDeck) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[400px]">
+      <div className="flex items-center justify-center h-full min-h-100">
         <Loader2 className="animate-spin text-blue-500" size={40} />
       </div>
     );
@@ -176,7 +202,7 @@ export const DeckDetails: React.FC = () => {
 
   if (deckError || !deck) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-slate-400 gap-4">
+      <div className="flex flex-col items-center justify-center h-full min-h-100 text-slate-400 gap-4">
         <p className="text-xl text-slate-300">Deck not found or failed to load.</p>
         <Button variant="outline" onClick={() => navigate(-1)}>
           Go Back
@@ -248,7 +274,7 @@ export const DeckDetails: React.FC = () => {
           </div>
 
           {/* Stats & Actions */}
-          <div className="flex flex-col gap-4 min-w-[200px]">
+          <div className="flex flex-col gap-4 min-w-50">
             <div className="grid grid-cols-2 gap-3 p-4 bg-slate-950 rounded-xl border border-slate-800/50">
               <div className="flex flex-col items-center justify-center p-2">
                 <Layers size={20} className="text-blue-400 mb-1" />

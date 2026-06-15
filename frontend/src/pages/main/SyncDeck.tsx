@@ -27,12 +27,15 @@ export const SyncDeck: React.FC = () => {
   const { savedDeckId } = useParams<{ savedDeckId: string }>();
   const parsedId = Number(savedDeckId);
   const navigate = useNavigate();
-  
+
   const [isSynced, setIsSynced] = useState(false);
   const [selectedDiffIds, setSelectedDiffIds] = useState<number[]>([]);
 
   const { data: summaryResponse, isLoading: isLoadingSummary } = useSyncSummary(parsedId);
-  const { data: detailsResponse, isLoading: isLoadingDetails } = useSyncDetails(parsedId, { page: 1, limit: 100 });
+  const { data: detailsResponse, isLoading: isLoadingDetails } = useSyncDetails(parsedId, {
+    page: 1,
+    limit: 100,
+  });
   const { mutateAsync: syncPartial, isPending: isSyncingPartial } = useSyncPartialCards();
   const { mutateAsync: syncAll, isPending: isSyncingAll } = useSyncAllCards();
 
@@ -56,10 +59,20 @@ export const SyncDeck: React.FC = () => {
       } else {
         await syncPartial({ savedDeckId: parsedId, data: { cardIds: selectedDiffIds } });
       }
-      toast.update(toastId, { type: 'success', render: 'Sync successful', isLoading: false, autoClose: 3000 });
+      toast.update(toastId, {
+        type: 'success',
+        render: 'Sync successful',
+        isLoading: false,
+        autoClose: 3000,
+      });
       setIsSynced(true);
     } catch {
-      toast.update(toastId, { type: 'error', render: 'Failed to sync cards', isLoading: false, autoClose: 3000 });
+      toast.update(toastId, {
+        type: 'error',
+        render: 'Failed to sync cards',
+        isLoading: false,
+        autoClose: 3000,
+      });
     }
   };
 

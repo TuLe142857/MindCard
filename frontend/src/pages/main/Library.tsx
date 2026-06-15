@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Flame } from 'lucide-react';
 import { SavedDeckCard } from '@/features/saved-decks/components/SavedDeckCard';
 
-
 import { useGetSavedDecks } from '@/features/users/hooks/useUsers';
 import { Loader2 } from 'lucide-react';
 
@@ -95,8 +94,8 @@ export const Library: React.FC = () => {
           </div>
           <h3 className="text-lg font-medium text-slate-200 mb-2">Your library is empty</h3>
           <p className="text-sm text-slate-500 mb-6 text-center max-w-sm">
-            {debouncedTerm 
-              ? 'No decks found matching your search.' 
+            {debouncedTerm
+              ? 'No decks found matching your search.'
               : 'Go to the Explore page to find and save decks created by the community.'}
           </p>
           <button

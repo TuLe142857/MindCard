@@ -9,7 +9,7 @@ function App() {
   const { isInitialized } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    console.log('Wellcome, rendered from App.tsx');
+    console.log('Welcome, rendered from App.tsx');
     dispatch(fetchAuth());
   }, [dispatch]);
 
