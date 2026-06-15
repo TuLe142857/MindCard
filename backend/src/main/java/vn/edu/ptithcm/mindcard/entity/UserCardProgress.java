@@ -3,14 +3,16 @@ package vn.edu.ptithcm.mindcard.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
-@Table
+@Table(name = "user_card_progress")
 @Builder
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserCardProgress {
@@ -21,7 +23,8 @@ public class UserCardProgress {
     }
 
     @Embeddable
-    @Data
+    @Getter
+    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
@@ -55,19 +58,23 @@ public class UserCardProgress {
     private CardStatus status = CardStatus.NEW;
 
     @Builder.Default
-    @Column(name = "ease_factor", columnDefinition = "double precision default 2.5", nullable = false)
+    @ColumnDefault("2.5")
+    @Column(name = "ease_factor", nullable = false)
     private Double easeFactor = 2.5;
 
     @Builder.Default
-    @Column(name = "interval", columnDefinition = "integer default 1", nullable = false)
+    @ColumnDefault("1")
+    @Column(name = "interval", nullable = false)
     private Integer interval = 1;
 
     @Builder.Default
-    @Column(name = "repetitions", columnDefinition = "integer default 0", nullable = false)
+    @ColumnDefault("0")
+    @Column(name = "repetitions", nullable = false)
     private Integer repetitions = 0;
 
     @Builder.Default
-    @Column(name = "next_review_date", columnDefinition = "timestamp default now()", nullable = false)
+    @ColumnDefault("now()")
+    @Column(name = "next_review_date", nullable = false)
     private Instant nextReviewDate = Instant.now();
 
 }

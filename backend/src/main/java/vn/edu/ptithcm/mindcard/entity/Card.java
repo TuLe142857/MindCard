@@ -3,8 +3,10 @@ package vn.edu.ptithcm.mindcard.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import vn.edu.ptithcm.mindcard.entity.embeded.CardContent;
@@ -15,7 +17,8 @@ import java.util.List;
 @Entity
 @Table(name = "cards")
 @Builder
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Card {
@@ -40,7 +43,8 @@ public class Card {
     List<CardVersion> versions;
 
     @Builder.Default
-    @Column(name = "is_deleted", columnDefinition = "boolean default false", nullable = false)
+    @ColumnDefault("false")
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
     @CreationTimestamp

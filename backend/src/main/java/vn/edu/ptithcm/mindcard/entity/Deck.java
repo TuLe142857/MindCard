@@ -20,8 +20,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "decks", uniqueConstraints = {
@@ -30,7 +32,8 @@ import lombok.NoArgsConstructor;
             columnNames = {"owner_id", "name"}
     )
 })
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -64,19 +67,23 @@ public class Deck {
     private String description;
 
     @Builder.Default
-    @Column(name = "saved_count", columnDefinition = "integer DEFAULT 0", nullable = false)
+    @ColumnDefault("0")
+    @Column(name = "saved_count", nullable = false)
     private int savedCount = 0;
 
     @Builder.Default
-    @Column(name = "rating_count", columnDefinition = "integer default 0", nullable = false)
+    @ColumnDefault("0")
+    @Column(name = "rating_count", nullable = false)
     private Integer ratingCount = 0;
 
     @Builder.Default
-    @Column(name = "avg_rating", columnDefinition = "double precision default 0", nullable = false)
+    @ColumnDefault("0")
+    @Column(name = "avg_rating", nullable = false)
     private Double avgRating = 0D;
 
     @Builder.Default
-    @Column(name = "is_deleted", columnDefinition = "boolean default false", nullable = false)
+    @ColumnDefault("false")
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
     @OneToMany(mappedBy = "deck", fetch = FetchType.LAZY)

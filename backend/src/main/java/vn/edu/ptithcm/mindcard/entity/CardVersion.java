@@ -3,16 +3,19 @@ package vn.edu.ptithcm.mindcard.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import vn.edu.ptithcm.mindcard.entity.embeded.CardContent;
 
 import java.time.Instant;
 
 @Entity
+@Table(name = "card_versions")
 @Builder
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardVersion {
