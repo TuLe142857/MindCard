@@ -10,7 +10,8 @@ x-backend-env: &backend-env
   S3_ENDPOINT: ${S3_ENDPOINT:?Variable is not set or empty}
   S3_PUBLIC_URL_OVERRIDE: ${S3_PUBLIC_URL_OVERRIDE}
   S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Variable is not set or empty}
-  S3_SECRETEY: ${S3_SECRET_KEY:?Variable is not set or empty}
+  S3_SECRET_KEY: ${S3_SECRET_KEY:?Variable is not set or empty}
+  S3_REGION: ${S3_REGION:-auto}
   S3_BUCKET: ${S3_BUCKET:?Variable is not set or empty}
   
   REDIS_HOST: ${REDIS_HOST:?Variable is not set or empty}
